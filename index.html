@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BackToYourDay</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="container">
+
+    <!-- Start screen: title, subtitle and birthday picker -->
+    <header class="hero" id="hero">
+      <h1>BackToYourDay</h1>
+      <p class="subtitle">Travel back to your birthday and discover what happened that day.</p>
+
+      <form id="birthday-form" class="picker">
+        <div class="fields">
+          <label>
+            Month
+            <select id="month" required>
+              <option value="" disabled selected>Month</option>
+              <option value="1">January</option>
+              <option value="2">February</option>
+              <option value="3">March</option>
+              <option value="4">April</option>
+              <option value="5">May</option>
+              <option value="6">June</option>
+              <option value="7">July</option>
+              <option value="8">August</option>
+              <option value="9">September</option>
+              <option value="10">October</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
+            </select>
+          </label>
+
+          <label>
+            Day
+            <select id="day" required>
+              <option value="" disabled selected>Day</option>
+            </select>
+          </label>
+        </div>
+
+        <button type="submit" id="travel-btn">Take Me Back</button>
+      </form>
+    </header>
+
+    <!-- Loading message -->
+    <p id="status" class="status" role="status"></p>
+
+    <!-- Error message with retry button -->
+    <div id="error-box" class="error-box hidden">
+      <p>We couldn't travel back to that day. Please try again.</p>
+      <button type="button" id="retry-btn">Try Again</button>
+    </div>
+
+    <!-- Results, hidden until a search succeeds -->
+    <div id="results" class="hidden">
+
+      <div class="headline-block">
+        <p class="eyebrow">You traveled back to</p>
+        <h2 id="headline">September 7</h2>
+      </div>
+
+      <section>
+        <h3>What Happened</h3>
+        <ul id="events-list" class="event-list"></ul>
+      </section>
+
+      <section>
+        <h3>Who Was Born</h3>
+        <div id="births-list" class="cards"></div>
+      </section>
+
+      <section>
+        <h3>Who Died</h3>
+        <div id="deaths-list" class="cards"></div>
+      </section>
+
+      <div class="again">
+        <p>Want to visit another day?</p>
+        <button type="button" id="again-btn">Choose Another Birthday</button>
+      </div>
+
+      <p class="source">Source: Wikipedia. <a id="source-link" href="#" target="_blank" rel="noopener">View this date</a></p>
+    </div>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
