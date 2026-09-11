@@ -1,28 +1,24 @@
 # BackToYourDay
 
-Travel back to your birthday and discover what happened that day.
-
-Pick your birthday month and day, click "Take Me Back", and see
-historical events, famous births, and notable deaths from that date.
+Pick your birthday and travel back to the day itself: the historical
+events, the famous people born, and those remembered on that date.
 
 Live site: https://gr33nops.github.io/BackToYourDay/
 
 ## What it shows
 
-- What Happened: 3 historical events in a simple list, each with
-  a year, a short text, and a Wikipedia link when available
-- Who Was Born: 3 people in cards with a photo (when available),
-  name, birth year, and short description
-- Who Died: 3 people in the same card style
+- Your birthday profile: star sign, birthstone, and birth flower,
+  all worked out from the date you pick
+- What happened: historical events for that date, shown as a timeline
+- Who was born: notable people who share your birthday
+- Who we lost: notable people remembered on that date
 
 ## Built with
 
-HTML, CSS, and plain JavaScript. No frameworks. No database. No login.
+HTML, CSS, and plain JavaScript. No frameworks, no build step, no login.
 
-Data comes from the free Wikipedia "On This Day" API.
-
-Headings use a serif font, normal text uses a clean sans-serif font.
-The layout is responsive: 3 cards per row on desktop, stacked on mobile.
+Historical data comes from the free Wikipedia "On This Day" API. The
+birthday profile is derived locally from the date, so it needs no API.
 
 ## Run it locally
 
@@ -35,13 +31,15 @@ Then open http://localhost:8000 in your browser.
 ## Files
 
 - index.html: page structure, birthday form, results sections
-- style.css: colors, timeline, cards, and mobile layout
-- script.js: reads the form, calls the API, shows the results
+- style.css: colours, type, timeline, cards, and responsive layout
+- script.js: reads the form, works out the profile, calls the API,
+  and renders the results
 
 ## How it works
 
-1. JavaScript reads the month and day from the form.
-2. It requests https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/all/MM/DD
-3. It picks 3 random items from events, births, and deaths
-   and adds them to the page as plain text, so the same
-   date can show something new each time.
+1. The form gives a month and day.
+2. The star sign, birthstone, and birth flower are looked up locally.
+3. The date is sent to
+   https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/all/MM/DD
+4. Three events, births, and deaths are chosen at random, so the same
+   date can surface something different each visit.

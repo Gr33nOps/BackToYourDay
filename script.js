@@ -1,12 +1,8 @@
-// BackToYourDay
-// Uses the free Wikipedia "On This Day" API:
-// https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/all/MM/DD
-
-// Get the page elements we need.
 const hero = document.getElementById("hero");
 const form = document.getElementById("birthday-form");
 const monthSelect = document.getElementById("month");
 const daySelect = document.getElementById("day");
+const loader = document.getElementById("loader");
 const statusEl = document.getElementById("status");
 const errorBox = document.getElementById("error-box");
 const retryBtn = document.getElementById("retry-btn");
@@ -18,16 +14,55 @@ const deathsList = document.getElementById("deaths-list");
 const sourceLink = document.getElementById("source-link");
 const againBtn = document.getElementById("again-btn");
 
+const zodiacSymbol = document.getElementById("zodiac-symbol");
+const zodiacName = document.getElementById("zodiac-name");
+const zodiacDates = document.getElementById("zodiac-dates");
+const zodiacElement = document.getElementById("zodiac-element");
+const zodiacTraits = document.getElementById("zodiac-traits");
+const birthstoneEl = document.getElementById("birthstone");
+const birthFlowerEl = document.getElementById("birth-flower");
+
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"
 ];
 
-// Remember the last search so "Try Again" can repeat it.
+const LOADING_LINES = [
+  "Winding back the clock...",
+  "Dusting off the almanac...",
+  "Setting the dials...",
+  "Turning the pages of history...",
+  "Warming up the time machine..."
+];
+
+const ZODIAC = [
+  { name: "Capricorn",   symbol: "♑", element: "Earth", traits: "Ambitious · Patient · Grounded",     dates: "Dec 22 – Jan 19", start: [12, 22], end: [1, 19]  },
+  { name: "Aquarius",    symbol: "♒", element: "Air",   traits: "Original · Open-minded · Independent", dates: "Jan 20 – Feb 18", start: [1, 20],  end: [2, 18]  },
+  { name: "Pisces",      symbol: "♓", element: "Water", traits: "Gentle · Creative · Empathetic",       dates: "Feb 19 – Mar 20", start: [2, 19],  end: [3, 20]  },
+  { name: "Aries",       symbol: "♈", element: "Fire",  traits: "Bold · Driven · Spirited",             dates: "Mar 21 – Apr 19", start: [3, 21],  end: [4, 19]  },
+  { name: "Taurus",      symbol: "♉", element: "Earth", traits: "Steady · Loyal · Grounded",            dates: "Apr 20 – May 20", start: [4, 20],  end: [5, 20]  },
+  { name: "Gemini",      symbol: "♊", element: "Air",   traits: "Curious · Witty · Lively",             dates: "May 21 – Jun 20", start: [5, 21],  end: [6, 20]  },
+  { name: "Cancer",      symbol: "♋", element: "Water", traits: "Caring · Intuitive · Loyal",           dates: "Jun 21 – Jul 22", start: [6, 21],  end: [7, 22]  },
+  { name: "Leo",         symbol: "♌", element: "Fire",  traits: "Warm · Confident · Generous",          dates: "Jul 23 – Aug 22", start: [7, 23],  end: [8, 22]  },
+  { name: "Virgo",       symbol: "♍", element: "Earth", traits: "Thoughtful · Precise · Kind",          dates: "Aug 23 – Sep 22", start: [8, 23],  end: [9, 22]  },
+  { name: "Libra",       symbol: "♎", element: "Air",   traits: "Charming · Fair · Easygoing",          dates: "Sep 23 – Oct 22", start: [9, 23],  end: [10, 22] },
+  { name: "Scorpio",     symbol: "♏", element: "Water", traits: "Magnetic · Loyal · Determined",        dates: "Oct 23 – Nov 21", start: [10, 23], end: [11, 21] },
+  { name: "Sagittarius", symbol: "♐", element: "Fire",  traits: "Adventurous · Honest · Optimistic",    dates: "Nov 22 – Dec 21", start: [11, 22], end: [12, 21] }
+];
+
+const BIRTHSTONES = [
+  "Garnet", "Amethyst", "Aquamarine", "Diamond", "Emerald", "Pearl",
+  "Ruby", "Peridot", "Sapphire", "Opal", "Topaz", "Turquoise"
+];
+
+const BIRTH_FLOWERS = [
+  "Carnation", "Violet", "Daffodil", "Daisy", "Lily of the valley", "Rose",
+  "Larkspur", "Gladiolus", "Aster", "Marigold", "Chrysanthemum", "Narcissus"
+];
+
 let lastMonth = "";
 let lastDay = "";
 
-// Fill the day dropdown with 1 to 31.
 for (let d = 1; d <= 31; d++) {
   const option = document.createElement("option");
   option.value = d;
@@ -35,8 +70,30 @@ for (let d = 1; d <= 31; d++) {
   daySelect.appendChild(option);
 }
 
-// Make one event entry: year, text, and a link if Wikipedia has one.
-// textContent is used everywhere so API text is never run as HTML.
+function getZodiac(month, day) {
+  for (const sign of ZODIAC) {
+    const [sm, sd] = sign.start;
+    const [em, ed] = sign.end;
+    const afterStart = month > sm || (month === sm && day >= sd);
+    const beforeEnd = month < em || (month === em && day <= ed);
+    if (sm <= em ? (afterStart && beforeEnd) : (afterStart || beforeEnd)) {
+      return sign;
+    }
+  }
+  return ZODIAC[0];
+}
+
+function showProfile(month, day) {
+  const sign = getZodiac(month, day);
+  zodiacSymbol.textContent = sign.symbol + "︎";
+  zodiacName.textContent = sign.name;
+  zodiacDates.textContent = sign.dates;
+  zodiacElement.textContent = sign.element + " sign";
+  zodiacTraits.textContent = sign.traits;
+  birthstoneEl.textContent = BIRTHSTONES[month - 1];
+  birthFlowerEl.textContent = BIRTH_FLOWERS[month - 1];
+}
+
 function toEventItem(item) {
   const li = document.createElement("li");
 
@@ -62,14 +119,12 @@ function toEventItem(item) {
   return li;
 }
 
-// Shorten a long description to a readable length.
 function shorten(text, maxLength) {
   if (!text) return "";
   if (text.length <= maxLength) return text;
   return text.slice(0, maxLength).trim() + "...";
 }
 
-// Make one person card: photo (if any), name, year, short description.
 function toPersonCard(item, yearLabel) {
   const card = document.createElement("div");
   card.className = "person-card";
@@ -81,7 +136,6 @@ function toPersonCard(item, yearLabel) {
     img.src = page.thumbnail.source;
     img.alt = "";
     img.loading = "lazy";
-    // If the photo fails to load, remove it and keep the text.
     img.addEventListener("error", function () {
       img.remove();
     });
@@ -118,7 +172,6 @@ function toPersonCard(item, yearLabel) {
   return card;
 }
 
-// Pick 3 random items, so searching the same date can show something new.
 function pickThree(items) {
   const copy = items.slice();
   for (let i = copy.length - 1; i > 0; i--) {
@@ -130,12 +183,10 @@ function pickThree(items) {
   return copy.slice(0, 3);
 }
 
-// Fill a box with 3 items made by the given function.
 function showItems(box, items, makeCard) {
   box.textContent = "";
   const picked = pickThree(items);
   if (picked.length === 0) {
-    // Use "li" inside lists and "p" everywhere else.
     const empty = document.createElement(box.tagName === "DIV" ? "p" : "li");
     empty.textContent = "Nothing found for this day.";
     box.appendChild(empty);
@@ -146,18 +197,17 @@ function showItems(box, items, makeCard) {
   });
 }
 
-// Fetch the data for one month/day and show the results.
 async function search(month, day) {
   lastMonth = month;
   lastDay = day;
 
-  statusEl.textContent = "Traveling back in time...";
+  statusEl.textContent = LOADING_LINES[Math.floor(Math.random() * LOADING_LINES.length)];
+  loader.classList.remove("hidden");
   errorBox.classList.add("hidden");
   resultsEl.classList.add("hidden");
   hero.classList.add("hidden");
 
   try {
-    // The API needs two digits, so 9 becomes 09.
     const mm = String(month).padStart(2, "0");
     const dd = String(day).padStart(2, "0");
     const url = "https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/all/" + mm + "/" + dd;
@@ -167,6 +217,7 @@ async function search(month, day) {
     const data = await response.json();
 
     headlineEl.textContent = MONTH_NAMES[month - 1] + " " + day;
+    showProfile(Number(month), Number(day));
     showItems(eventsList, data.events || [], toEventItem);
     showItems(birthsList, data.births || [], function (item) {
       return toPersonCard(item, "Born");
@@ -176,31 +227,28 @@ async function search(month, day) {
     });
     sourceLink.href = "https://en.wikipedia.org/wiki/" + MONTH_NAMES[month - 1] + "_" + day;
 
-    statusEl.textContent = "";
+    loader.classList.add("hidden");
     resultsEl.classList.remove("hidden");
-    resultsEl.scrollIntoView();
+    resultsEl.scrollIntoView({ behavior: "smooth", block: "start" });
   } catch (error) {
-    statusEl.textContent = "";
+    loader.classList.add("hidden");
     hero.classList.remove("hidden");
     errorBox.classList.remove("hidden");
   }
 }
 
-// "Take Me Back" starts a search with the chosen date.
 form.addEventListener("submit", function (event) {
   event.preventDefault();
   if (!monthSelect.value || !daySelect.value) return;
   search(monthSelect.value, daySelect.value);
 });
 
-// "Try Again" repeats the last search.
 retryBtn.addEventListener("click", function () {
   if (lastMonth && lastDay) search(lastMonth, lastDay);
 });
 
-// "Choose Another Birthday" goes back to the picker.
 againBtn.addEventListener("click", function () {
   resultsEl.classList.add("hidden");
   hero.classList.remove("hidden");
-  window.scrollTo(0, 0);
+  window.scrollTo({ top: 0, behavior: "smooth" });
 });

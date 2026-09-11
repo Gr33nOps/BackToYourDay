@@ -4,20 +4,33 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BackToYourDay</title>
+  <meta name="description" content="Pick your birthday and travel back to discover what happened on that day in history." />
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕰️</text></svg>" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main class="container">
 
-    <!-- Start screen: title, subtitle and birthday picker -->
     <header class="hero" id="hero">
-      <h1>BackToYourDay</h1>
-      <p class="subtitle">Travel back to your birthday and discover what happened that day.</p>
+      <div class="hero-mark" aria-hidden="true">
+        <span class="hero-mark-dot"></span>
+        Est. any year you like
+      </div>
+
+      <h1 class="hero-title">Back<span>To</span>YourDay</h1>
+      <p class="subtitle">Choose your birthday and travel back to the day itself &mdash; the news, the arrivals, the farewells, straight from the pages of history.</p>
 
       <form id="birthday-form" class="picker">
+        <p class="picker-label">Set the dial to your birthday</p>
         <div class="fields">
           <label>
-            Month
+            <span class="field-name">Month</span>
             <select id="month" required>
               <option value="" disabled selected>Month</option>
               <option value="1">January</option>
@@ -36,55 +49,98 @@
           </label>
 
           <label>
-            Day
+            <span class="field-name">Day</span>
             <select id="day" required>
               <option value="" disabled selected>Day</option>
             </select>
           </label>
         </div>
 
-        <button type="submit" id="travel-btn">Take Me Back</button>
+        <button type="submit" id="travel-btn">
+          <span>Take me back</span>
+          <span class="btn-arrow" aria-hidden="true">&rarr;</span>
+        </button>
       </form>
+
+      <p class="hero-foot">Powered by Wikipedia&rsquo;s record of every day.</p>
     </header>
 
-    <!-- Loading message -->
-    <p id="status" class="status" role="status"></p>
-
-    <!-- Error message with retry button -->
-    <div id="error-box" class="error-box hidden">
-      <p>We couldn't travel back to that day. Please try again.</p>
-      <button type="button" id="retry-btn">Try Again</button>
+    <div id="loader" class="loader hidden" role="status" aria-live="polite">
+      <div class="dial" aria-hidden="true">
+        <span class="dial-hand"></span>
+        <span class="dial-pin"></span>
+      </div>
+      <p id="status" class="status">Winding back the clock&hellip;</p>
     </div>
 
-    <!-- Results, hidden until a search succeeds -->
-    <div id="results" class="hidden">
+    <div id="error-box" class="error-box hidden" role="alert">
+      <div class="error-icon" aria-hidden="true">!</div>
+      <p>The time machine hit a snag and couldn&rsquo;t reach that day. Mind trying once more?</p>
+      <button type="button" id="retry-btn">Try again</button>
+    </div>
+
+    <div id="results" class="results hidden">
 
       <div class="headline-block">
-        <p class="eyebrow">You traveled back to</p>
+        <p class="eyebrow">You&rsquo;ve arrived on</p>
         <h2 id="headline">September 7</h2>
+        <p class="headline-sub">Here&rsquo;s what makes this day yours.</p>
       </div>
 
-      <section>
-        <h3>What Happened</h3>
+      <section class="section section-profile">
+        <div class="profile">
+          <div class="zodiac">
+            <span class="zodiac-symbol" id="zodiac-symbol" aria-hidden="true">&#9812;</span>
+            <div class="zodiac-info">
+              <p class="zodiac-eyebrow">Your star sign</p>
+              <h3 class="zodiac-name" id="zodiac-name">Virgo</h3>
+              <p class="zodiac-meta"><span id="zodiac-dates">Aug 23 &ndash; Sep 22</span> &middot; <span id="zodiac-element">Earth sign</span></p>
+              <p class="zodiac-traits" id="zodiac-traits">Thoughtful &middot; Precise &middot; Kind</p>
+            </div>
+          </div>
+          <dl class="profile-facts">
+            <div>
+              <dt>Birthstone</dt>
+              <dd id="birthstone">Sapphire</dd>
+            </div>
+            <div>
+              <dt>Birth flower</dt>
+              <dd id="birth-flower">Aster</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <section class="section section-events">
+        <div class="section-head">
+          <h3>What happened</h3>
+          <p class="section-note">Moments from this date across the years.</p>
+        </div>
         <ul id="events-list" class="event-list"></ul>
       </section>
 
-      <section>
-        <h3>Who Was Born</h3>
+      <section class="section section-people section-births">
+        <div class="section-head">
+          <h3>Who was born</h3>
+          <p class="section-note">You share a birthday with these people.</p>
+        </div>
         <div id="births-list" class="cards"></div>
       </section>
 
-      <section>
-        <h3>Who Died</h3>
+      <section class="section section-people section-deaths">
+        <div class="section-head">
+          <h3>Who we lost</h3>
+          <p class="section-note">Remembered on this date.</p>
+        </div>
         <div id="deaths-list" class="cards"></div>
       </section>
 
       <div class="again">
-        <p>Want to visit another day?</p>
-        <button type="button" id="again-btn">Choose Another Birthday</button>
+        <p>Fancy another trip?</p>
+        <button type="button" id="again-btn">Pick another day</button>
       </div>
 
-      <p class="source">Source: Wikipedia. <a id="source-link" href="#" target="_blank" rel="noopener">View this date</a></p>
+      <p class="source">Source: Wikipedia. <a id="source-link" href="#" target="_blank" rel="noopener">See this date in full</a></p>
     </div>
 
   </main>
