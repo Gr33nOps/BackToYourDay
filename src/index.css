@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --paper: #f4ebda;
+  --paper-deep: #ecdfc8;
+  --card: #fffdf7;
+
+  --ink: #2b2620;
+  --muted: #6a5c47;
+
+  --terracotta: #b8502a;
+  --terracotta-deep: #9a4123;
+  --teal: #2f7d78;
+  --teal-deep: #235d59;
+  --slate-deep: #3b4652;
+
+  --border: #e3d4b6;
+  --border-soft: #ede1c9;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    color: var(--ink);
+    font-family: "Figtree", "Segoe UI", system-ui, sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    background-color: var(--paper);
+    background-image:
+      radial-gradient(120% 90% at 50% -10%, #fbf4e6 0%, rgba(251, 244, 230, 0) 55%),
+      radial-gradient(90% 70% at 100% 100%, #f0e3cc 0%, rgba(240, 227, 204, 0) 60%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  :focus-visible {
+    outline: 3px solid rgba(47, 125, 120, 0.45);
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

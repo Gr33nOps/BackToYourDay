@@ -8,38 +8,48 @@ Live site: https://gr33nops.github.io/BackToYourDay/
 ## What it shows
 
 - Your birthday profile: star sign, birthstone, and birth flower,
-  all worked out from the date you pick
+  derived locally from the date you pick
 - What happened: historical events for that date, shown as a timeline
 - Who was born: notable people who share your birthday
 - Who we lost: notable people remembered on that date
 
+Historical data comes from the free Wikipedia "On This Day" API. The
+birthday profile needs no API.
+
 ## Built with
 
-HTML, CSS, and plain JavaScript. No frameworks, no build step, no login.
+- React + TypeScript
+- Vite
+- Tailwind CSS (shadcn/ui compatible setup)
+- Framer Motion for the animated effects (date reveal, image reveal,
+  cursor trail)
 
-Historical data comes from the free Wikipedia "On This Day" API. The
-birthday profile is derived locally from the date, so it needs no API.
+The project is set up as a shadcn/ui registry consumer, so components
+from registries such as Skiper UI can be added with the shadcn CLI.
 
-## Run it locally
+## Develop
 
 ```bash
-python3 -m http.server 8000
+npm install
+npm run dev
 ```
 
-Then open http://localhost:8000 in your browser.
+## Build
 
-## Files
+```bash
+npm run build
+npm run preview
+```
 
-- index.html: page structure, birthday form, results sections
-- style.css: colours, type, timeline, cards, and responsive layout
-- script.js: reads the form, works out the profile, calls the API,
-  and renders the results
+## Deploy
 
-## How it works
+Pushing to `main` triggers the GitHub Actions workflow in
+`.github/workflows/deploy.yml`, which builds the site and publishes it
+to GitHub Pages.
 
-1. The form gives a month and day.
-2. The star sign, birthstone, and birth flower are looked up locally.
-3. The date is sent to
-   https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/all/MM/DD
-4. Three events, births, and deaths are chosen at random, so the same
-   date can surface something different each visit.
+## Structure
+
+- `src/components` – UI sections (picker, results, profile, timeline, cards)
+- `src/components/effects` – the animated effects
+- `src/lib/zodiac.ts` – star sign, birthstone, and birth flower data
+- `src/lib/onthisday.ts` – Wikipedia API client and helpers
