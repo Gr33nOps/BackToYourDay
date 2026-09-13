@@ -170,7 +170,6 @@ export default function App() {
           >
             <StoryContainer
               date={date}
-              monthName={monthName}
               identity={identity}
               moon={moon}
               weather={weather}

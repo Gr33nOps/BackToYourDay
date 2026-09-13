@@ -6,25 +6,15 @@ import type { MoonPhaseInfo } from "@/lib/astronomy";
 import type { HistoricalWeather } from "@/lib/weather";
 import type { NasaApodData, MovieItem, SongItem } from "@/lib/culture";
 import { sound } from "@/lib/sound";
+import { clampScene, sceneProgress } from "@/lib/story";
 
 import { StarfieldBackground } from "@/components/effects/StarfieldBackground";
 import { FilmGrain } from "@/components/effects/FilmGrain";
 
-import { SceneDateReveal } from "./SceneDateReveal";
-import { SceneZodiac } from "./SceneZodiac";
-import { SceneGemstone } from "./SceneGemstone";
-import { SceneBotanical } from "./SceneBotanical";
-import { SceneMoon } from "./SceneMoon";
-import { SceneWeather } from "./SceneWeather";
-import { SceneApod } from "./SceneApod";
-import { SceneCinema } from "./SceneCinema";
-import { SceneMusic } from "./SceneMusic";
-import { SceneDaysLived } from "./SceneDaysLived";
-import { SceneShareEnding } from "./SceneShareEnding";
+import { UnifiedSlide } from "./UnifiedSlide";
 
 interface StoryContainerProps {
   date: Date;
-  monthName: string;
   identity: BirthdayIdentity;
   moon: MoonPhaseInfo;
   weather: HistoricalWeather;
@@ -83,16 +73,13 @@ function cycleStyle(scene: number): TransitionStyle {
 }
 
 export function StoryContainer({
-  date, monthName, identity, moon, weather, sky, movies, songs, onReset,
+  date, identity, moon, weather, sky, movies, songs, onReset,
 }: StoryContainerProps) {
   const [activeScene, setActiveScene] = useState(0);
   const [direction, setDirection] = useState<1 | -1>(1);
   const [audioActive, setAudioActive] = useState(() => sound.isEnabled());
   const isTransitioning = useRef(false);
 
-  const day = date.getDate();
-  const year = date.getFullYear();
-  const formattedDate = `${monthName} ${day}, ${year}`;
   const TOTAL_SCENES = 11;
 
   const handleToggleAudio = () => {
@@ -102,7 +89,7 @@ export function StoryContainer({
 
   const goToScene = useCallback((index: number) => {
     if (index === activeScene || isTransitioning.current) return;
-    if (index >= 0 && index < TOTAL_SCENES) {
+    if (index === clampScene(index, TOTAL_SCENES)) {
       isTransitioning.current = true;
       setDirection(index > activeScene ? 1 : -1);
       setActiveScene(index);
@@ -227,30 +214,10 @@ export function StoryContainer({
       <div className="fixed bottom-0 left-0 right-0 z-40 h-[2px] bg-white/10">
         <motion.div
           className="h-full bg-accent/70"
-          animate={{ width: `${((activeScene + 1) / TOTAL_SCENES) * 100}%` }}
+          animate={{ width: `${sceneProgress(activeScene, TOTAL_SCENES)}%` }}
           transition={{ duration: 0.35, ease: "easeOut" }}
         />
       </div>
-
-      <nav
-        className="hidden md:flex fixed right-6 top-1/2 -translate-y-1/2 z-40 flex-col items-center gap-2"
-        aria-label="Story scenes"
-      >
-        {Array.from({ length: TOTAL_SCENES }).map((_, idx) => (
-          <button
-            key={idx}
-            type="button"
-            onClick={() => goToScene(idx)}
-            title={SCENE_NAMES[idx]}
-            aria-label={`Go to ${SCENE_NAMES[idx]}`}
-            className={`rounded-full transition-all duration-300 cursor-pointer ${
-              activeScene === idx
-                ? "w-[3px] h-5 bg-accent"
-                : "w-[3px] h-[3px] bg-white/25 hover:bg-white/50"
-            }`}
-          />
-        ))}
-      </nav>
 
       <nav
         aria-label="Story navigation"
@@ -300,27 +267,7 @@ export function StoryContainer({
             className="absolute inset-0 w-full h-full"
           >
             <div className="w-full h-full flex flex-col items-center justify-center overflow-y-auto overflow-x-hidden">
-              {activeScene === 0 && (
-                <SceneDateReveal monthName={monthName} day={day} year={year}
-                  weekday={identity.metrics.weekdayBorn} identity={identity} />
-              )}
-              {activeScene === 1 && <SceneZodiac zodiac={identity.western} />}
-              {activeScene === 2 && <SceneGemstone birthstone={identity.birthstone} />}
-              {activeScene === 3 && <SceneBotanical botanicals={identity.botanicals} />}
-              {activeScene === 4 && <SceneMoon moon={moon} />}
-              {activeScene === 5 && <SceneWeather weather={weather} />}
-              {activeScene === 6 && <SceneApod sky={sky} formattedDate={formattedDate} />}
-              {activeScene === 7 && <SceneCinema movies={movies} year={year} />}
-              {activeScene === 8 && <SceneMusic songs={songs} year={year} />}
-              {activeScene === 9 && (
-                <SceneDaysLived daysLived={identity.metrics.daysLived} identity={identity} />
-              )}
-              {activeScene === 10 && (
-                <SceneShareEnding
-                  day={day} monthName={monthName} year={year}
-                  identity={identity} moon={moon} weather={weather} onReset={onReset}
-                />
-              )}
+              <UnifiedSlide index={activeScene} date={date} identity={identity} moon={moon} weather={weather} sky={sky} movies={movies} songs={songs} onReset={onReset} />
             </div>
           </motion.div>
         </AnimatePresence>

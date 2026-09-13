@@ -30,6 +30,7 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
   }
 
   :focus-visible {
@@ -38,6 +39,70 @@
   }
 
   ::-webkit-scrollbar { width: 0; height: 0; }
+}
+
+@layer components {
+  .capsule-slide {
+    width: min(1120px, 100%);
+    min-height: 100%;
+    margin: 0 auto;
+    padding: clamp(2rem, 6vw, 5.5rem) clamp(1.25rem, 5vw, 4.5rem);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.8fr);
+    align-items: center;
+    gap: clamp(2.5rem, 7vw, 7rem);
+  }
+
+  .capsule-copy { min-width: 0; }
+  .capsule-eyebrow {
+    margin: 0 0 1rem;
+    color: rgba(229, 169, 60, 0.8);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .capsule-slide h1 {
+    max-width: 13ch;
+    margin: 0;
+    color: #fff;
+    font-family: Syne, "Plus Jakarta Sans", sans-serif;
+    font-size: clamp(2.8rem, 6.4vw, 6.5rem);
+    font-weight: 800;
+    letter-spacing: -0.065em;
+    line-height: 0.95;
+    text-wrap: balance;
+  }
+  .capsule-body {
+    max-width: 50ch;
+    margin: 1.35rem 0 0;
+    color: rgba(255,255,255,0.62);
+    font-size: clamp(0.94rem, 1.5vw, 1.08rem);
+    line-height: 1.75;
+    text-wrap: pretty;
+  }
+  .capsule-details {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 2rem 0 0;
+  }
+  .capsule-details dt { color: rgba(255,255,255,0.38); font: 0.62rem/1.3 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.1em; text-transform: uppercase; }
+  .capsule-details dd { margin: 0.35rem 0 0; color: rgba(255,255,255,0.88); font-size: 0.8rem; line-height: 1.35; overflow-wrap: anywhere; }
+  .capsule-art { display: flex; min-width: 0; justify-content: center; align-items: center; }
+  .capsule-button, .capsule-link { min-height: 44px; touch-action: manipulation; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; }
+  .capsule-button { display: inline-flex; align-items: center; gap: 0.6rem; border: 1px solid rgba(229,169,60,.6); border-radius: 999px; background: rgba(229,169,60,.12); color: #f5c66d; padding: 0.8rem 1.1rem; transition: background-color .2s, border-color .2s, color .2s, transform .2s; }
+  .capsule-button:hover { background: rgba(229,169,60,.22); border-color: #f5c66d; color: #fff3d1; }
+  .capsule-link { display: inline-flex; align-items: center; justify-content: center; gap: .45rem; border: 0; background: transparent; color: rgba(255,255,255,.55); padding: .35rem .6rem; transition: color .2s; }
+  .capsule-link:hover { color: #fff; }
+
+  @media (max-width: 700px) {
+    .capsule-slide { grid-template-columns: 1fr; gap: 2rem; align-content: center; padding-top: 2.5rem; padding-bottom: 2rem; }
+    .capsule-slide h1 { font-size: clamp(2.65rem, 13vw, 4.6rem); }
+    .capsule-art { order: -1; min-height: 12rem; }
+    .capsule-details { margin-top: 1.5rem; }
+  }
 }
 
 /* ─── Keyframes ──────────────────────────────────────────────── */
