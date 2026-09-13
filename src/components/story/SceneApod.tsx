@@ -35,17 +35,17 @@ export function SceneApod({ sky, formattedDate }: SceneApodProps) {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, delay: 0.15 }}
-        className="relative z-10 w-full max-w-xl mb-4 sm:mb-6"
+        className="relative z-10 w-full max-w-xl mb-2 sm:mb-6 px-2"
       >
-        <div className="p-5 sm:p-6 text-center space-y-2.5 bg-canvas/90 backdrop-blur-md border border-surface-border rounded-xl">
+        <div className="p-4 sm:p-6 text-center space-y-2 sm:space-y-2.5 bg-canvas/90 backdrop-blur-md border border-surface-border rounded-xl shadow-2xl">
           {/* Category Marker */}
-          <div className="flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-foreground-muted">
+          <div className="flex items-center justify-center gap-1.5 sm:gap-2 font-mono text-[10px] sm:text-xs uppercase tracking-[0.15em] sm:tracking-[0.2em] text-foreground-muted">
             <span className="w-1.5 h-1.5 rounded-full bg-accent" />
             <span>Archival Plate &bull; NASA Deep Space</span>
           </div>
 
           {/* NASA Title */}
-          <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-white leading-snug">
+          <h2 className="font-display text-lg sm:text-3xl md:text-4xl font-extrabold tracking-tight text-white leading-snug">
             {sky.title}
           </h2>
 
@@ -56,7 +56,7 @@ export function SceneApod({ sky, formattedDate }: SceneApodProps) {
 
           {/* Metadata */}
           {sky.copyright && (
-            <div className="pt-2.5 border-t border-surface-border text-[11px] font-mono text-foreground-dim">
+            <div className="pt-2 sm:pt-2.5 border-t border-surface-border text-[10px] sm:text-[11px] font-mono text-foreground-dim">
               Photograph &copy; {sky.copyright}
             </div>
           )}

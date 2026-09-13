@@ -55,16 +55,16 @@ export function SceneWeather({ weather }: SceneWeatherProps) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-      className="w-full max-w-4xl mx-auto select-none px-4"
+      className="w-full max-w-4xl mx-auto select-none px-2 sm:px-4"
     >
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-center">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8 md:gap-12 items-center">
         {/* Left Column: Massive Temperature & Observation Hero */}
-        <div className="md:col-span-6 text-left space-y-4">
-          <span className="font-mono text-xs uppercase tracking-widest text-accent font-semibold block">
+        <div className="md:col-span-6 text-left space-y-3 sm:space-y-4">
+          <span className="font-mono text-[11px] sm:text-xs uppercase tracking-widest text-accent font-semibold block">
             ATMOSPHERIC RECORD
           </span>
 
-          <div className="flex items-baseline gap-3">
+          <div className="flex items-baseline gap-2.5 sm:gap-3">
             <AnimatePresence mode="wait">
               <motion.span
                 key={`${unit}-${temp}`}
@@ -72,7 +72,7 @@ export function SceneWeather({ weather }: SceneWeatherProps) {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.2 }}
-                className="font-display text-7xl sm:text-8xl md:text-9xl font-bold tracking-tighter text-white tabular-nums leading-none"
+                className="font-display text-6xl sm:text-8xl md:text-9xl font-bold tracking-tighter text-white tabular-nums leading-none"
               >
                 <NumberTicker value={temp} delay={0.15} />
               </motion.span>
@@ -105,11 +105,11 @@ export function SceneWeather({ weather }: SceneWeatherProps) {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <h2 className="font-display text-2xl sm:text-3xl font-bold text-white tracking-tight">
+          <div className="space-y-1.5 sm:space-y-2">
+            <h2 className="font-display text-xl sm:text-3xl font-bold text-white tracking-tight">
               {weather.condition}
             </h2>
-            <p className="text-foreground-muted text-sm sm:text-base leading-relaxed font-sans max-w-md">
+            <p className="text-foreground-muted text-xs sm:text-base leading-relaxed font-sans max-w-md">
               On this calendar date, historical meteorological records registered a peak daytime reading of {temp}&deg;{unit} with {weather.summary.replace(/\.$/, "").toLowerCase()}.
             </p>
           </div>
@@ -118,38 +118,38 @@ export function SceneWeather({ weather }: SceneWeatherProps) {
         {/* Right Column: Observation Log Sheet with 3D Tilt */}
         <div className="md:col-span-6">
           <TiltPlate>
-            <div className="border border-surface-border bg-surface/70 p-6 text-left space-y-4">
-              <div className="flex items-center justify-between border-b border-surface-border pb-3">
+            <div className="border border-surface-border bg-surface/70 p-4 sm:p-6 text-left space-y-3 sm:space-y-4">
+              <div className="flex items-center justify-between border-b border-surface-border pb-2.5 sm:pb-3">
                 <span className="text-[10px] font-mono uppercase tracking-widest text-foreground-dim">
                   METEOROLOGICAL STATION LOG
                 </span>
-                <WeatherIcon className="w-5 h-5 text-accent stroke-[1.5]" />
+                <WeatherIcon className="w-4 h-4 sm:w-5 sm:h-5 text-accent stroke-[1.5]" />
               </div>
 
-              <div className="divide-y divide-surface-border text-xs font-mono">
-                <div className="py-2.5 flex items-center justify-between">
+              <div className="divide-y divide-surface-border text-[11px] sm:text-xs font-mono">
+                <div className="py-2 sm:py-2.5 flex items-center justify-between">
                   <span className="text-foreground-dim uppercase">Diurnal Range</span>
                   <span className="text-white font-medium">
                     {minTemp}&deg; &ndash; {temp}&deg;{unit}
                   </span>
                 </div>
 
-                <div className="py-2.5 flex items-center justify-between">
+                <div className="py-2 sm:py-2.5 flex items-center justify-between">
                   <span className="text-foreground-dim uppercase">Sunrise Recorded</span>
                   <span className="text-white font-medium">{weather.sunriseTime}</span>
                 </div>
 
-                <div className="py-2.5 flex items-center justify-between">
+                <div className="py-2 sm:py-2.5 flex items-center justify-between">
                   <span className="text-foreground-dim uppercase">Sunset Recorded</span>
                   <span className="text-white font-medium">{weather.sunsetTime}</span>
                 </div>
 
-                <div className="py-2.5 flex items-center justify-between">
+                <div className="py-2 sm:py-2.5 flex items-center justify-between">
                   <span className="text-foreground-dim uppercase">Precipitation Accumulation</span>
                   <span className="text-white font-medium">{weather.precipitationMm} mm</span>
                 </div>
 
-                <div className="py-2.5 flex items-center justify-between">
+                <div className="py-2 sm:py-2.5 flex items-center justify-between">
                   <span className="text-foreground-dim uppercase">Daylight Duration</span>
                   <span className="text-white font-medium">{weather.daylightHours} hrs</span>
                 </div>

@@ -124,7 +124,7 @@ export function TimeTravelTransition({
   }, [currentYear, targetYear]);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-canvas text-foreground px-4 select-none overflow-hidden">
+    <div className="fixed inset-0 z-50 h-[100dvh] min-h-[100dvh] flex flex-col items-center justify-center bg-canvas text-foreground px-4 select-none overflow-hidden">
       {/* Hyperspace canvas */}
       <canvas
         ref={canvasRef}
@@ -137,18 +137,18 @@ export function TimeTravelTransition({
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.4 }}
-        className="flex flex-col items-center text-center w-full relative z-10 space-y-4"
+        className="flex flex-col items-center text-center w-full relative z-10 space-y-3 sm:space-y-4 px-2"
       >
-        <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-foreground-muted">
+        <div className="flex items-center gap-2 font-mono text-[11px] sm:text-xs uppercase tracking-[0.2em] text-foreground-muted">
           <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
           <span>Retrieving Historical Archive</span>
         </div>
 
-        <div className="font-display text-8xl sm:text-9xl md:text-[11rem] font-extrabold tracking-tighter tabular-nums leading-none text-white">
+        <div className="font-display text-6xl sm:text-8xl md:text-[11rem] font-extrabold tracking-tighter tabular-nums leading-none text-white">
           {displayYear}
         </div>
 
-        <p className="text-foreground-muted text-sm sm:text-base font-mono">
+        <p className="text-foreground-muted text-xs sm:text-base font-mono px-2">
           Target Date: <span className="text-white font-semibold">{targetMonthName} {targetDay}, {targetYear}</span>
         </p>
       </motion.div>

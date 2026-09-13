@@ -14,34 +14,44 @@ export function SceneMoon({ moon }: SceneMoonProps) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-      className="w-full max-w-4xl mx-auto select-none px-4"
+      className="w-full max-w-4xl mx-auto select-none px-2 sm:px-4"
     >
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-center">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-5 sm:gap-8 md:gap-12 items-center">
         {/* Left Column: Lunar Disk Observation Frame with 3D Tilt */}
         <div className="md:col-span-5">
           <TiltPlate>
-            <div className="flex flex-col items-center justify-center p-8 border border-surface-border bg-surface/60 relative">
-              <div className="w-full flex items-center justify-between text-[10px] font-mono uppercase tracking-widest text-foreground-dim border-b border-surface-border pb-2.5 mb-6">
+            <div className="flex flex-col items-center justify-center p-4 sm:p-8 border border-surface-border bg-surface/60 relative">
+              <div className="w-full flex items-center justify-between text-[10px] font-mono uppercase tracking-widest text-foreground-dim border-b border-surface-border pb-2 mb-4 sm:mb-6">
                 <span>OBSERVATION PLATE &bull; LUNAR</span>
                 <span>DAY {moon.ageDays}</span>
               </div>
 
-              <div className="relative my-4 flex items-center justify-center">
+              <div className="relative my-2 sm:my-4 flex items-center justify-center">
                 <motion.div
                   animate={{ y: [0, -6, 0] }}
                   transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
                   className="relative z-10"
                 >
-                  <MoonVisual
-                    illumination={moon.illumination}
-                    phaseFraction={moon.phaseFraction}
-                    isWaxing={moon.isWaxing}
-                    size={190}
-                  />
+                  <div className="sm:hidden">
+                    <MoonVisual
+                      illumination={moon.illumination}
+                      phaseFraction={moon.phaseFraction}
+                      isWaxing={moon.isWaxing}
+                      size={135}
+                    />
+                  </div>
+                  <div className="hidden sm:block">
+                    <MoonVisual
+                      illumination={moon.illumination}
+                      phaseFraction={moon.phaseFraction}
+                      isWaxing={moon.isWaxing}
+                      size={190}
+                    />
+                  </div>
                 </motion.div>
               </div>
 
-              <div className="w-full text-center pt-4 border-t border-surface-border text-[11px] font-mono text-foreground-muted">
+              <div className="w-full text-center pt-3 sm:pt-4 border-t border-surface-border text-[10px] sm:text-[11px] font-mono text-foreground-muted">
                 Surface Illumination: <span className="text-white font-medium">{moon.illumination}%</span>
               </div>
             </div>
@@ -49,21 +59,21 @@ export function SceneMoon({ moon }: SceneMoonProps) {
         </div>
 
         {/* Right Column: Left-Aligned Astronomical Log */}
-        <div className="md:col-span-7 text-left space-y-5">
-          <div className="space-y-1.5">
-            <span className="font-mono text-xs uppercase tracking-widest text-accent font-semibold block">
+        <div className="md:col-span-7 text-left space-y-3.5 sm:space-y-5">
+          <div className="space-y-1">
+            <span className="font-mono text-[11px] sm:text-xs uppercase tracking-widest text-accent font-semibold block">
               NIGHT SKY EPHEMERIS
             </span>
-            <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-tight">
+            <h2 className="font-display text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-tight">
               {moon.phaseName}
             </h2>
-            <div className="text-accent text-sm font-mono uppercase tracking-wider font-semibold">
+            <div className="text-accent text-xs sm:text-sm font-mono uppercase tracking-wider font-semibold">
               <NumberTicker value={moon.illumination} delay={0.2} />% illuminated lunar disk
             </div>
           </div>
 
           {/* Narrative Astronomical Record */}
-          <p className="text-foreground-muted text-sm sm:text-base leading-relaxed font-sans">
+          <p className="text-foreground-muted text-xs sm:text-base leading-relaxed font-sans">
             On the night you entered the world, the lunar body was{" "}
             <strong className="text-white font-medium">
               {moon.isWaxing ? "waxing toward maximum radiance" : "waning toward shadow"}
@@ -72,18 +82,18 @@ export function SceneMoon({ moon }: SceneMoonProps) {
           </p>
 
           {/* Technical Ledger Strip */}
-          <div className="grid grid-cols-3 border-t border-b border-surface-border py-3 text-xs font-mono divide-x divide-surface-border">
-            <div className="pr-3">
-              <span className="text-[10px] text-foreground-dim block uppercase">Trajectory</span>
-              <span className="text-white font-semibold text-sm">{moon.isWaxing ? "Waxing" : "Waning"}</span>
+          <div className="grid grid-cols-3 border-t border-b border-surface-border py-2 sm:py-3 text-[11px] sm:text-xs font-mono divide-x divide-surface-border">
+            <div className="pr-2 sm:pr-3">
+              <span className="text-[9px] sm:text-[10px] text-foreground-dim block uppercase">Trajectory</span>
+              <span className="text-white font-semibold text-xs sm:text-sm">{moon.isWaxing ? "Waxing" : "Waning"}</span>
             </div>
-            <div className="px-3">
-              <span className="text-[10px] text-foreground-dim block uppercase">Synodic Age</span>
-              <span className="text-white font-semibold text-sm">{moon.ageDays} days</span>
+            <div className="px-2 sm:px-3">
+              <span className="text-[9px] sm:text-[10px] text-foreground-dim block uppercase">Synodic Age</span>
+              <span className="text-white font-semibold text-xs sm:text-sm">{moon.ageDays} days</span>
             </div>
-            <div className="pl-3">
-              <span className="text-[10px] text-foreground-dim block uppercase">Cycle Progress</span>
-              <span className="text-white font-semibold text-sm">{Math.round(moon.phaseFraction * 100)}%</span>
+            <div className="pl-2 sm:pl-3">
+              <span className="text-[9px] sm:text-[10px] text-foreground-dim block uppercase">Cycle Progress</span>
+              <span className="text-white font-semibold text-xs sm:text-sm">{Math.round(moon.phaseFraction * 100)}%</span>
             </div>
           </div>
         </div>

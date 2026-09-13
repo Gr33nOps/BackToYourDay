@@ -27,8 +27,11 @@ export function TiltPlate({
   });
   const [isHovered, setIsHovered] = useState<boolean>(false);
 
+  const isHoverSupported = typeof window !== "undefined" && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!isHoverSupported) return;
       const el = plateRef.current;
       if (!el) return;
 
@@ -51,14 +54,16 @@ export function TiltPlate({
         });
       }
     },
-    [maxTilt, glare]
+    [maxTilt, glare, isHoverSupported]
   );
 
   const handleMouseEnter = () => {
+    if (!isHoverSupported) return;
     setIsHovered(true);
   };
 
   const handleMouseLeave = () => {
+    if (!isHoverSupported) return;
     setIsHovered(false);
     setTransform("perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)");
     if (glare) {

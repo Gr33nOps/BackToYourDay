@@ -1,6 +1,14 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, ChevronUp, RotateCcw, Volume2, VolumeX } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  ChevronLeft,
+  ChevronRight,
+  RotateCcw,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import type { BirthdayIdentity } from "@/lib/almanac";
 import type { MoonPhaseInfo } from "@/lib/astronomy";
 import type { HistoricalWeather } from "@/lib/weather";
@@ -113,6 +121,12 @@ export function StoryContainer({
       } else if (e.key === "ArrowUp" || e.key === "PageUp" || (e.key === " " && e.shiftKey)) {
         e.preventDefault();
         prevScene();
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        nextScene();
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        prevScene();
       } else if (e.key === "r" || e.key === "R" || e.key === "Escape") {
         onReset();
       }
@@ -137,15 +151,20 @@ export function StoryContainer({
     }
   };
 
-  // Touch swipe support
+  // Safe horizontal touch swipe support (allows normal vertical scrolling)
+  const touchStartX = useRef(0);
   const touchStartY = useRef(0);
   const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
   };
   const handleTouchEnd = (e: React.TouchEvent) => {
-    const diff = touchStartY.current - e.changedTouches[0].clientY;
-    if (Math.abs(diff) > 40) {
-      if (diff > 0) {
+    const diffX = touchStartX.current - e.changedTouches[0].clientX;
+    const diffY = touchStartY.current - e.changedTouches[0].clientY;
+
+    // Only trigger slide transition if horizontal gesture is predominant
+    if (Math.abs(diffX) > 45 && Math.abs(diffX) > Math.abs(diffY) * 1.4) {
+      if (diffX > 0) {
         nextScene();
       } else {
         prevScene();
@@ -158,31 +177,32 @@ export function StoryContainer({
       onWheel={handleWheel}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      className="relative w-full h-screen overflow-hidden bg-canvas text-foreground select-none flex flex-col"
+      className="relative w-full h-[100dvh] min-h-[100dvh] overflow-hidden bg-canvas text-foreground select-none flex flex-col overscroll-contain"
     >
       {/* Background Starfield Canvas */}
       <StarfieldBackground starCount={100} enableShootingStars={true} />
 
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-40 bg-canvas/90 backdrop-blur-md border-b border-surface-border px-4 sm:px-8 py-3 flex items-center justify-between transition-colors">
+      <header className="fixed top-0 left-0 right-0 z-40 bg-canvas/90 backdrop-blur-md border-b border-surface-border px-3 sm:px-8 py-2.5 sm:py-3 flex items-center justify-between transition-colors">
         {/* Brand & Date */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button
             type="button"
             onClick={onReset}
-            className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] font-semibold text-foreground hover:text-white transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 sm:gap-2 font-mono text-[11px] sm:text-xs uppercase tracking-[0.15em] sm:tracking-[0.2em] font-semibold text-foreground hover:text-white transition-colors cursor-pointer shrink-0"
           >
             <span className="w-2 h-2 rounded-full bg-accent" />
-            <span>BackToYourDay</span>
+            <span className="hidden xs:inline">BackToYourDay</span>
+            <span className="xs:hidden">BTYD</span>
           </button>
           <span className="hidden sm:inline text-foreground-dim text-xs">&bull;</span>
-          <span className="hidden sm:inline text-xs font-mono text-foreground-muted">
+          <span className="hidden md:inline text-xs font-mono text-foreground-muted truncate">
             {formattedDate}
           </span>
         </div>
 
-        {/* Scene Progress & Title */}
-        <div className="flex items-center gap-3 sm:gap-4">
+        {/* Scene Progress & Audio & Reset */}
+        <div className="flex items-center gap-2 sm:gap-3">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeScene}
@@ -190,12 +210,12 @@ export function StoryContainer({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 4 }}
               transition={{ duration: 0.15 }}
-              className="text-xs text-foreground-muted font-mono flex items-center gap-2"
+              className="text-xs text-foreground-muted font-mono flex items-center gap-1.5 sm:gap-2"
             >
-              <span className="px-2 py-0.5 rounded bg-surface border border-surface-border text-[11px] text-accent font-semibold">
-                {String(activeScene + 1).padStart(2, "0")} / {String(TOTAL_SCENES).padStart(2, "0")}
+              <span className="px-1.5 sm:px-2 py-0.5 rounded bg-surface border border-surface-border text-[10px] sm:text-[11px] text-accent font-semibold">
+                {String(activeScene + 1).padStart(2, "0")}/{String(TOTAL_SCENES).padStart(2, "0")}
               </span>
-              <span className="hidden sm:inline text-foreground font-sans font-medium text-xs">
+              <span className="hidden md:inline text-foreground font-sans font-medium text-xs max-w-[150px] lg:max-w-none truncate">
                 {SCENE_NAMES[activeScene]}
               </span>
             </motion.div>
@@ -205,29 +225,32 @@ export function StoryContainer({
           <button
             type="button"
             onClick={handleToggleAudio}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-surface-border bg-surface hover:bg-surface-raised text-foreground-muted hover:text-white text-xs font-mono transition-colors cursor-pointer"
+            className="inline-flex items-center justify-center p-1.5 sm:px-3 sm:py-1.5 rounded-lg border border-surface-border bg-surface hover:bg-surface-raised text-foreground-muted hover:text-white text-xs font-mono transition-colors cursor-pointer"
             title={audioActive ? "Mute audio effects" : "Enable tactile sound effects"}
+            aria-label={audioActive ? "Mute audio" : "Unmute audio"}
           >
             {audioActive ? (
               <>
                 <Volume2 className="w-3.5 h-3.5 text-accent" />
-                <span className="hidden sm:inline text-accent">Audio On</span>
+                <span className="hidden sm:inline ml-1.5 text-accent">Audio On</span>
               </>
             ) : (
               <>
                 <VolumeX className="w-3.5 h-3.5 text-foreground-dim" />
-                <span className="hidden sm:inline text-foreground-dim">Audio Off</span>
+                <span className="hidden sm:inline ml-1.5 text-foreground-dim">Audio Off</span>
               </>
             )}
           </button>
 
+          {/* Change Date Button */}
           <button
             type="button"
             onClick={onReset}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-surface-border bg-surface hover:bg-surface-raised text-foreground-muted hover:text-white text-xs font-mono transition-colors cursor-pointer"
+            className="inline-flex items-center justify-center gap-1.5 p-1.5 sm:px-3 sm:py-1.5 rounded-lg border border-surface-border bg-surface hover:bg-surface-raised text-foreground-muted hover:text-white text-xs font-mono transition-colors cursor-pointer"
             title="Try another birthday"
+            aria-label="Change birthday date"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
+            <RotateCcw className="w-3.5 h-3.5 text-accent" />
             <span className="hidden sm:inline">Change Date</span>
           </button>
         </div>
@@ -243,50 +266,100 @@ export function StoryContainer({
       </header>
 
       {/* Main Animated Stage with Directional Transitions */}
-      <main className="flex-1 w-full h-full relative pt-16 flex items-center justify-center overflow-hidden z-10">
+      <main className="flex-1 w-full h-full relative pt-14 sm:pt-16 pb-16 sm:pb-0 overflow-hidden z-10">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeScene}
-            initial={{ opacity: 0, y: direction > 0 ? 25 : -25 }}
+            initial={{ opacity: 0, y: direction > 0 ? 20 : -20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: direction > 0 ? -25 : 25 }}
-            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full h-full flex items-center justify-center p-4 sm:p-8 md:p-12 overflow-y-auto"
+            exit={{ opacity: 0, y: direction > 0 ? -20 : 20 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full h-full overflow-y-auto overflow-x-hidden px-3 sm:px-8"
           >
-            {activeScene === 0 && (
-              <SceneDateReveal
-                monthName={monthName}
-                day={day}
-                year={year}
-                weekday={weekday}
-                identity={identity}
-              />
-            )}
-            {activeScene === 1 && <SceneZodiac zodiac={identity.western} />}
-            {activeScene === 2 && <SceneGemstone birthstone={identity.birthstone} />}
-            {activeScene === 3 && <SceneBotanical botanicals={identity.botanicals} />}
-            {activeScene === 4 && <SceneMoon moon={moon} />}
-            {activeScene === 5 && <SceneWeather weather={weather} />}
-            {activeScene === 6 && <SceneApod sky={sky} formattedDate={formattedDate} />}
-            {activeScene === 7 && <SceneCinema movies={movies} year={year} />}
-            {activeScene === 8 && <SceneMusic songs={songs} year={year} />}
-            {activeScene === 9 && (
-              <SceneDaysLived daysLived={identity.metrics.daysLived} identity={identity} />
-            )}
-            {activeScene === 10 && (
-              <SceneShareEnding
-                day={day}
-                monthName={monthName}
-                year={year}
-                identity={identity}
-                moon={moon}
-                weather={weather}
-                onReset={onReset}
-              />
-            )}
+            <div className="min-h-full w-full flex flex-col justify-start sm:justify-center items-center py-4 sm:py-8">
+              {activeScene === 0 && (
+                <SceneDateReveal
+                  monthName={monthName}
+                  day={day}
+                  year={year}
+                  weekday={weekday}
+                  identity={identity}
+                />
+              )}
+              {activeScene === 1 && <SceneZodiac zodiac={identity.western} />}
+              {activeScene === 2 && <SceneGemstone birthstone={identity.birthstone} />}
+              {activeScene === 3 && <SceneBotanical botanicals={identity.botanicals} />}
+              {activeScene === 4 && <SceneMoon moon={moon} />}
+              {activeScene === 5 && <SceneWeather weather={weather} />}
+              {activeScene === 6 && <SceneApod sky={sky} formattedDate={formattedDate} />}
+              {activeScene === 7 && <SceneCinema movies={movies} year={year} />}
+              {activeScene === 8 && <SceneMusic songs={songs} year={year} />}
+              {activeScene === 9 && (
+                <SceneDaysLived daysLived={identity.metrics.daysLived} identity={identity} />
+              )}
+              {activeScene === 10 && (
+                <SceneShareEnding
+                  day={day}
+                  monthName={monthName}
+                  year={year}
+                  identity={identity}
+                  moon={moon}
+                  weather={weather}
+                  onReset={onReset}
+                />
+              )}
+            </div>
           </motion.div>
         </AnimatePresence>
       </main>
+
+      {/* Mobile Bottom Navigation Bar (Screens < md) */}
+      <nav
+        aria-label="Mobile story navigation"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-canvas/95 backdrop-blur-lg border-t border-surface-border px-3 py-2 flex items-center justify-between pb-[max(0.6rem,env(safe-area-inset-bottom))]"
+      >
+        <button
+          type="button"
+          onClick={prevScene}
+          disabled={activeScene === 0}
+          aria-label="Previous scene"
+          className="inline-flex items-center gap-1 px-3 py-2 rounded-lg border border-surface-border bg-surface disabled:opacity-30 disabled:pointer-events-none text-foreground hover:text-white text-xs font-mono font-medium transition-colors cursor-pointer"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          <span>Prev</span>
+        </button>
+
+        <div className="flex flex-col items-center justify-center min-w-0 px-2 text-center">
+          <span className="text-[10px] font-mono text-accent font-semibold tracking-wider">
+            {String(activeScene + 1).padStart(2, "0")} OF {String(TOTAL_SCENES).padStart(2, "0")}
+          </span>
+          <span className="text-[11px] font-medium text-foreground truncate max-w-[170px]">
+            {SCENE_NAMES[activeScene]}
+          </span>
+        </div>
+
+        {activeScene < TOTAL_SCENES - 1 ? (
+          <button
+            type="button"
+            onClick={nextScene}
+            aria-label="Next scene"
+            className="inline-flex items-center gap-1 px-3 py-2 rounded-lg bg-accent text-canvas font-mono font-bold text-xs hover:bg-accent-hover transition-colors cursor-pointer shadow-md"
+          >
+            <span>Next</span>
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={onReset}
+            aria-label="Finish and explore another birthday"
+            className="inline-flex items-center gap-1 px-3 py-2 rounded-lg bg-white text-canvas font-mono font-bold text-xs hover:bg-neutral-200 transition-colors cursor-pointer shadow-md"
+          >
+            <span>Restart</span>
+            <RotateCcw className="w-3.5 h-3.5" />
+          </button>
+        )}
+      </nav>
 
       {/* Side Dot Navigation (Desktop only) */}
       <nav
@@ -309,8 +382,8 @@ export function StoryContainer({
         ))}
       </nav>
 
-      {/* Arrow Controls (Floating Bottom Right) */}
-      <div className="fixed bottom-6 right-6 z-40 flex items-center gap-2">
+      {/* Desktop Arrow Controls (Floating Bottom Right, Desktop only) */}
+      <div className="hidden md:flex fixed bottom-6 right-6 z-40 items-center gap-2">
         {activeScene > 0 && (
           <button
             type="button"
