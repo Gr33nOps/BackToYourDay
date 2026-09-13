@@ -38,7 +38,7 @@ export function SceneCinema({ movies, year }: SceneCinemaProps) {
             backgroundImage: `url(${current.posterUrl})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
-            filter: "blur(32px) brightness(0.28) saturate(0.7)",
+            filter: "blur(34px) brightness(0.25) saturate(0.7)",
             transform: "scale(1.15)",
           }}
         />
@@ -48,7 +48,7 @@ export function SceneCinema({ movies, year }: SceneCinemaProps) {
       <div
         className="absolute inset-0 z-[1] pointer-events-none"
         style={{
-          background: "radial-gradient(ellipse at 50% 40%, rgba(5,5,7,0.2) 0%, rgba(5,5,7,0.85) 85%)",
+          background: "radial-gradient(ellipse at 50% 40%, rgba(5,5,7,0.15) 0%, rgba(5,5,7,0.85) 85%)",
         }}
       />
       <div
@@ -71,29 +71,29 @@ export function SceneCinema({ movies, year }: SceneCinemaProps) {
           />
         </div>
         <div className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.25em] text-white/45">
-          Top 3 Releases
+          Top 3 Box Office
         </div>
       </header>
 
-      {/* Main 3-film showcase deck */}
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-8 max-w-5xl mx-auto w-full my-auto py-2 sm:py-4">
-        {/* Active spotlight details banner */}
-        <div className="text-center mb-3 sm:mb-6 max-w-xl mx-auto">
+      {/* Main 3-film showcase: 1 page with all 3 movies and full visible names */}
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-3 sm:px-8 max-w-5xl mx-auto w-full my-auto py-2 sm:py-4">
+        {/* Active spotlight details banner — NEVER truncated */}
+        <div className="text-center mb-2.5 sm:mb-5 max-w-xl mx-auto px-2">
           <motion.div
             key={`spotlight-badge-${current.title}`}
-            initial={{ opacity: 0, y: -6 }}
+            initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.25 }}
             className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent/80 mb-1"
           >
             #{selected + 1} Spotlight · {year}
           </motion.div>
           <motion.h2
             key={`spotlight-title-${current.title}`}
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35 }}
-            className="font-display font-black text-white leading-tight tracking-tight text-xl sm:text-3xl md:text-4xl truncate"
+            transition={{ duration: 0.3 }}
+            className="font-display font-black text-white leading-tight tracking-tight text-lg sm:text-2xl md:text-3xl break-words"
           >
             {current.title}
           </motion.h2>
@@ -101,15 +101,15 @@ export function SceneCinema({ movies, year }: SceneCinemaProps) {
             key={`spotlight-dir-${current.title}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
-            className="font-mono text-[10px] sm:text-xs text-white/55 uppercase tracking-wider mt-1 truncate"
+            transition={{ duration: 0.25, delay: 0.05 }}
+            className="font-mono text-[10px] sm:text-xs text-white/60 uppercase tracking-wider mt-1 break-words"
           >
             Directed by {current.director}
           </motion.p>
         </div>
 
-        {/* 3 Prominent Movie Cards Display */}
-        <div className="grid grid-cols-3 gap-2.5 sm:gap-5 md:gap-7 w-full max-w-4xl items-end">
+        {/* 3 Prominent Movie Box Tabs Display — Full visible names */}
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6 w-full max-w-4xl items-start">
           {displayMovies.map((movie, index) => {
             const isSelected = index === selected;
             return (
@@ -117,25 +117,25 @@ export function SceneCinema({ movies, year }: SceneCinemaProps) {
                 key={movie.title}
                 type="button"
                 onClick={() => handleSelect(index)}
-                whileHover={{ y: -4 }}
+                whileHover={{ y: -3 }}
                 whileTap={{ scale: 0.98 }}
                 transition={{ duration: 0.2 }}
                 aria-label={`Select #${index + 1} movie: ${movie.title}`}
-                className={`group relative flex flex-col items-center rounded-xl p-1.5 sm:p-2.5 text-left transition-all duration-300 cursor-pointer overflow-hidden ${
+                className={`group relative flex flex-col items-center rounded-xl p-2 sm:p-3 text-left transition-all duration-300 cursor-pointer ${
                   isSelected
-                    ? "bg-white/[0.08] border-amber-400/60 shadow-[0_0_28px_rgba(229,169,60,0.22),inset_0_1px_0_rgba(255,255,255,0.25)] ring-1 ring-amber-400/40"
-                    : "bg-white/[0.03] hover:bg-white/[0.06] border-white/10 hover:border-white/25 opacity-85 hover:opacity-100"
+                    ? "bg-white/[0.09] border-amber-400/70 shadow-[0_0_28px_rgba(229,169,60,0.25),inset_0_1px_0_rgba(255,255,255,0.25)] ring-1 ring-amber-400/40"
+                    : "bg-white/[0.03] hover:bg-white/[0.06] border-white/10 hover:border-white/25 opacity-90 hover:opacity-100"
                 } border backdrop-blur-md`}
               >
                 {/* Poster container with rank badge overlay */}
-                <div className="relative w-full aspect-[2/3] rounded-lg overflow-hidden mb-2 sm:mb-3 shadow-xl bg-black/40">
+                <div className="relative w-full aspect-[2/3] rounded-lg overflow-hidden mb-2 sm:mb-2.5 shadow-xl bg-black/40 shrink-0">
                   <img
                     src={movie.posterUrl}
                     alt={movie.title}
                     loading="eager"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  {/* Subtle top-to-bottom inner shadow on poster */}
+                  {/* Subtle vignette on poster */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 pointer-events-none" />
 
                   {/* Rank badge */}
@@ -143,8 +143,8 @@ export function SceneCinema({ movies, year }: SceneCinemaProps) {
                     <span
                       className={`inline-flex items-center justify-center font-mono text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full backdrop-blur-md shadow-md ${
                         index === 0
-                          ? "bg-amber-500/90 text-black border border-amber-300"
-                          : "bg-black/75 text-white/90 border border-white/20"
+                          ? "bg-amber-500 text-black border border-amber-300"
+                          : "bg-black/80 text-white/90 border border-white/20"
                       }`}
                     >
                       #{index + 1}
@@ -162,16 +162,16 @@ export function SceneCinema({ movies, year }: SceneCinemaProps) {
                   )}
                 </div>
 
-                {/* Movie Title & Info */}
-                <div className="w-full px-0.5 text-center sm:text-left">
+                {/* Movie Title & Info — FULL PROPER VISIBLE NAME (no truncate!) */}
+                <div className="w-full px-0.5 text-center sm:text-left flex-1 flex flex-col justify-start">
                   <h3
-                    className={`font-display font-bold leading-tight truncate text-xs sm:text-sm md:text-base ${
-                      isSelected ? "text-amber-200" : "text-white/90"
+                    className={`font-display font-bold leading-tight break-words text-[11px] sm:text-sm md:text-base min-h-[2.2rem] sm:min-h-[2.6rem] flex items-center justify-center sm:justify-start ${
+                      isSelected ? "text-amber-200" : "text-white"
                     }`}
                   >
                     {movie.title}
                   </h3>
-                  <p className="font-mono text-[9px] sm:text-[10px] text-white/50 uppercase tracking-wider truncate mt-0.5">
+                  <p className="font-mono text-[9px] sm:text-[10px] text-white/50 uppercase tracking-wider break-words mt-0.5">
                     {movie.director}
                   </p>
                 </div>
@@ -184,7 +184,7 @@ export function SceneCinema({ movies, year }: SceneCinemaProps) {
       {/* Bottom spacer for clearance above mobile nav */}
       <footer className="relative z-10 pb-16 sm:pb-12 text-center">
         <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/35">
-          Tap any poster to spotlight
+          Tap any box to spotlight
         </span>
       </footer>
     </div>

@@ -13,7 +13,7 @@ interface SceneMusicProps {
 
 function MiniEqualizer({ active }: { active: boolean }) {
   return (
-    <div className="flex items-end gap-1 h-5 shrink-0 px-1.5" aria-hidden="true">
+    <div className="flex items-end gap-1 h-5 shrink-0 px-1" aria-hidden="true">
       <span
         className={`w-1 rounded-full transition-all duration-300 ${
           active
@@ -174,7 +174,7 @@ export function SceneMusic({ songs, year }: SceneMusicProps) {
         </div>
       </header>
 
-      {/* Main 3-Song Showcase Container */}
+      {/* Main 3-Song Showcase: 1 page with all 3 songs and full visible names */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-8 max-w-3xl mx-auto w-full my-auto py-2 sm:py-4">
         <div className="w-full flex flex-col gap-2.5 sm:gap-3.5">
           {displaySongs.map((song, index) => {
@@ -188,10 +188,10 @@ export function SceneMusic({ songs, year }: SceneMusicProps) {
                 whileTap={{ scale: 0.99 }}
                 transition={{ duration: 0.2 }}
                 aria-label={`Select #${index + 1} song: ${song.title} by ${song.artist}`}
-                className={`group relative flex items-center justify-between gap-3 sm:gap-5 rounded-2xl p-2.5 sm:p-3.5 text-left transition-all duration-300 cursor-pointer overflow-hidden ${
+                className={`group relative flex items-center justify-between gap-3 sm:gap-5 rounded-2xl p-2.5 sm:p-3.5 text-left transition-all duration-300 cursor-pointer ${
                   isSelected
                     ? "bg-white/[0.09] border-amber-400/60 shadow-[0_0_24px_rgba(229,169,60,0.18),inset_0_1px_0_rgba(255,255,255,0.22)] ring-1 ring-amber-400/40"
-                    : "bg-white/[0.03] hover:bg-white/[0.06] border-white/10 hover:border-white/20 opacity-85 hover:opacity-100"
+                    : "bg-white/[0.03] hover:bg-white/[0.06] border-white/10 hover:border-white/20 opacity-90 hover:opacity-100"
                 } border backdrop-blur-xl`}
               >
                 {/* Left: Album cover with rank badge */}
@@ -218,25 +218,25 @@ export function SceneMusic({ songs, year }: SceneMusicProps) {
                     </div>
                   </div>
 
-                  {/* Middle: Title & Artist */}
+                  {/* Middle: Title & Artist — FULL PROPER VISIBLE NAME (no truncate!) */}
                   <div className="min-w-0 flex-1">
                     <div className="font-mono text-[9px] sm:text-[10px] uppercase tracking-widest text-accent/80 mb-0.5">
                       {index === 0 ? "Billboard #1" : `Rank #${index + 1}`} · {year}
                     </div>
                     <h3
-                      className={`font-display font-bold leading-tight truncate text-sm sm:text-base md:text-lg ${
-                        isSelected ? "text-amber-200" : "text-white/95"
+                      className={`font-display font-bold leading-tight break-words text-xs sm:text-base md:text-lg ${
+                        isSelected ? "text-amber-200" : "text-white"
                       }`}
                     >
                       {song.title}
                     </h3>
-                    <p className="font-mono text-[10px] sm:text-xs text-white/55 uppercase tracking-wider truncate mt-0.5">
+                    <p className="font-mono text-[10px] sm:text-xs text-white/55 uppercase tracking-wider break-words mt-0.5">
                       {song.artist}
                     </p>
                   </div>
                 </div>
 
-                {/* Right: Audio Equalizer animation & Selection indicator */}
+                {/* Right: Audio Equalizer animation */}
                 <div className="flex items-center gap-2 shrink-0">
                   <MiniEqualizer active={isSelected} />
                 </div>

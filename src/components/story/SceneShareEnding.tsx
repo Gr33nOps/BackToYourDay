@@ -5,8 +5,6 @@ import type { MoonPhaseInfo } from "@/lib/astronomy";
 import type { HistoricalWeather } from "@/lib/weather";
 import { Share2, Copy, RotateCcw, Check } from "lucide-react";
 import { prefersReducedMotion } from "@/utils/motion";
-
-import { PillTag } from "@/components/ui/PillTag";
 import { ShimmerButton, GlassButton, GhostPillButton } from "@/components/ui/ShimmerButton";
 
 interface SceneShareEndingProps {
@@ -46,11 +44,10 @@ export function SceneShareEnding({
       vy: -(Math.random() * 0.6 + 0.1),
       r: Math.random() * 1.8 + 0.3,
       alpha: Math.random() * 0.28 + 0.04,
-      hue: 40, // amber only — no random violet
+      hue: 40,
     }));
 
     if (prefersReducedMotion()) {
-      // Static: just draw particles once
       for (const p of particles) {
         ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
         ctx.fillStyle = `hsla(40,70%,65%,${p.alpha})`; ctx.fill();
@@ -101,7 +98,7 @@ export function SceneShareEnding({
     <div className="relative w-full h-full flex items-center justify-center overflow-y-auto px-4 py-16 sm:py-12">
       <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 pointer-events-none w-full h-full z-0" />
 
-      <div className="relative z-10 w-full max-w-lg text-center my-auto">
+      <div className="relative z-10 w-full max-w-xl text-center my-auto">
         {/* Date */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -125,22 +122,27 @@ export function SceneShareEnding({
           <span className="text-accent">Story.</span>
         </motion.h2>
 
-        {/* Summary tags (21st MCP modern glass pill tags) */}
+        {/* Summary small box tabs */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35, duration: 0.7 }}
-          className="flex flex-wrap justify-center gap-2 sm:gap-2.5 mb-7 sm:mb-9"
+          className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-2.5 max-w-xl mx-auto mb-7 sm:mb-9"
         >
           {summary.map((s, idx) => (
-            <PillTag
+            <div
               key={s.label}
-              label={s.label}
-              value={s.val}
-              dot={idx === 0}
-              dotColor="amber"
-              variant="glass"
-            />
+              className={`flex flex-col items-center justify-center p-2.5 sm:p-3 rounded-xl backdrop-blur-xl border transition-all duration-300 ${
+                idx === 4 ? "col-span-2 sm:col-span-1" : ""
+              } bg-white/[0.04] border-white/10 hover:border-amber-400/40 hover:bg-white/[0.07] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_4px_16px_rgba(0,0,0,0.3)]`}
+            >
+              <span className="font-mono text-[9px] sm:text-[10px] text-white/45 uppercase tracking-[0.18em] mb-1">
+                {s.label}
+              </span>
+              <span className="font-mono text-xs sm:text-sm font-semibold text-white/95 tracking-wide text-center break-words">
+                {s.val}
+              </span>
+            </div>
           ))}
         </motion.div>
 
@@ -153,14 +155,16 @@ export function SceneShareEnding({
         >
           <ShimmerButton
             onClick={handleShare}
-            icon={<Share2 className="w-3.5 h-3.5" />}
+            icon={<Share2 className="w-4 h-4" />}
+            className="w-full sm:w-auto px-8"
           >
             Share
           </ShimmerButton>
 
           <GlassButton
             onClick={handleCopy}
-            icon={copied ? <Check className="w-3.5 h-3.5 text-accent" /> : <Copy className="w-3.5 h-3.5" />}
+            icon={copied ? <Check className="w-4 h-4 text-accent" /> : <Copy className="w-4 h-4" />}
+            className="w-full sm:w-auto px-8"
           >
             {copied ? "Copied!" : "Copy Link"}
           </GlassButton>

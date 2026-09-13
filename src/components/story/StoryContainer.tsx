@@ -186,22 +186,45 @@ export function StoryContainer({
           </span>
         </button>
 
-        {/* Scene label */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeScene}
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 6 }}
-            transition={{ duration: 0.2 }}
-            className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/50"
-          >
-            {String(activeScene + 1).padStart(2, "0")} / {String(TOTAL_SCENES).padStart(2, "0")}
-            <span className="hidden sm:inline ml-2 text-white/35">
-              · {SCENE_NAMES[activeScene]}
-            </span>
-          </motion.div>
-        </AnimatePresence>
+        {/* Desktop scene small box tabs */}
+        <nav
+          aria-label="Scene tabs"
+          className="hidden md:flex items-center gap-1.5 p-1 rounded-xl bg-white/[0.03] border border-white/10 backdrop-blur-xl pointer-events-auto shadow-md"
+        >
+          {SCENE_NAMES.map((name, i) => (
+            <button
+              key={name}
+              type="button"
+              onClick={() => goToScene(i)}
+              className={`px-2.5 py-1 rounded-lg font-mono text-[10px] uppercase tracking-wider transition-all cursor-pointer ${
+                i === activeScene
+                  ? "bg-amber-500/20 text-amber-300 border border-amber-400/40 shadow-[0_0_10px_rgba(229,169,60,0.2)] font-semibold"
+                  : "text-white/40 hover:text-white/80 hover:bg-white/[0.04] border border-transparent"
+              }`}
+            >
+              {name}
+            </button>
+          ))}
+        </nav>
+
+        {/* Mobile scene label */}
+        <div className="md:hidden">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeScene}
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 6 }}
+              transition={{ duration: 0.2 }}
+              className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/50"
+            >
+              {String(activeScene + 1).padStart(2, "0")} / {String(TOTAL_SCENES).padStart(2, "0")}
+              <span className="ml-1 text-white/35">
+                · {SCENE_NAMES[activeScene]}
+              </span>
+            </motion.div>
+          </AnimatePresence>
+        </div>
 
         {/* Controls */}
         <div className="pointer-events-auto flex items-center gap-3">
