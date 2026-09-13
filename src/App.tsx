@@ -4,6 +4,7 @@ import { LandingScene } from "@/components/story/LandingScene";
 import { TimeTravelTransition } from "@/components/story/TimeTravelTransition";
 import { StoryContainer } from "@/components/story/StoryContainer";
 import { ErrorBox } from "@/components/ErrorBox";
+import { readStoryDate } from "@/lib/date";
 
 import {
   getBirthdayIdentity,
@@ -94,21 +95,8 @@ export default function App() {
   // Check URL query parameters on initial page load
   useEffect(() => {
     try {
-      const params = new URLSearchParams(window.location.search);
-      const dayParam = params.get("day");
-      const monthParam = params.get("month");
-      const yearParam = params.get("year");
-
-      if (dayParam && monthParam && yearParam) {
-        const d = parseInt(dayParam, 10);
-        const m = parseInt(monthParam, 10);
-        const y = parseInt(yearParam, 10);
-
-        if (d >= 1 && d <= 31 && m >= 1 && m <= 12 && y >= 1920 && y <= new Date().getFullYear()) {
-          const parsedDate = new Date(y, m - 1, d);
-          travelToDate(parsedDate, false);
-        }
-      }
+      const sharedDate = readStoryDate(window.location.search);
+      if (sharedDate) travelToDate(sharedDate, false);
     } catch {
       // ignore
     }

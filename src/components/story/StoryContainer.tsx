@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { RotateCcw, Volume2, VolumeX } from "lucide-react";
+import { ArrowLeft, ArrowRight, RotateCcw, Volume2, VolumeX } from "lucide-react";
 import type { BirthdayIdentity } from "@/lib/almanac";
 import type { MoonPhaseInfo } from "@/lib/astronomy";
 import type { HistoricalWeather } from "@/lib/weather";
@@ -171,8 +171,7 @@ export function StoryContainer({
     >
       <StarfieldBackground starCount={90} enableShootingStars={true} />
 
-      {/* Floating minimal top HUD */}
-      <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-5 py-3 pointer-events-none">
+      <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 py-4 sm:px-6 pointer-events-none">
         {/* Brand */}
         <button
           type="button"
@@ -186,29 +185,7 @@ export function StoryContainer({
           </span>
         </button>
 
-        {/* Desktop scene small box tabs */}
-        <nav
-          aria-label="Scene tabs"
-          className="hidden md:flex items-center gap-1.5 p-1 rounded-xl bg-white/[0.03] border border-white/10 backdrop-blur-xl pointer-events-auto shadow-md"
-        >
-          {SCENE_NAMES.map((name, i) => (
-            <button
-              key={name}
-              type="button"
-              onClick={() => goToScene(i)}
-              className={`px-2.5 py-1 rounded-lg font-mono text-[10px] uppercase tracking-wider transition-all cursor-pointer ${
-                i === activeScene
-                  ? "bg-amber-500/20 text-amber-300 border border-amber-400/40 shadow-[0_0_10px_rgba(229,169,60,0.2)] font-semibold"
-                  : "text-white/40 hover:text-white/80 hover:bg-white/[0.04] border border-transparent"
-              }`}
-            >
-              {name}
-            </button>
-          ))}
-        </nav>
-
-        {/* Mobile scene label */}
-        <div className="md:hidden">
+        <div className="absolute left-1/2 -translate-x-1/2">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeScene}
@@ -216,12 +193,9 @@ export function StoryContainer({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 6 }}
               transition={{ duration: 0.2 }}
-              className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/50"
+              className="whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.18em] text-white/55 sm:text-[11px]"
             >
-              {String(activeScene + 1).padStart(2, "0")} / {String(TOTAL_SCENES).padStart(2, "0")}
-              <span className="ml-1 text-white/35">
-                · {SCENE_NAMES[activeScene]}
-              </span>
+              {String(activeScene + 1).padStart(2, "0")} / {String(TOTAL_SCENES).padStart(2, "0")} <span className="text-white/35">·</span> {SCENE_NAMES[activeScene]}
             </motion.div>
           </AnimatePresence>
         </div>
@@ -231,6 +205,7 @@ export function StoryContainer({
           <button
             type="button"
             onClick={handleToggleAudio}
+            aria-label={audioActive ? "Mute sounds" : "Enable sounds"}
             className="cursor-pointer text-white/45 hover:text-white/80 transition-colors"
             style={{ background: "none", border: "none", padding: "4px" }}
           >
@@ -239,6 +214,7 @@ export function StoryContainer({
           <button
             type="button"
             onClick={onReset}
+            aria-label="Choose another date"
             className="cursor-pointer text-white/45 hover:text-white/80 transition-colors"
             style={{ background: "none", border: "none", padding: "4px" }}
           >
@@ -256,9 +232,8 @@ export function StoryContainer({
         />
       </div>
 
-      {/* Right dot nav (desktop) */}
       <nav
-        className="hidden md:flex fixed right-5 top-1/2 -translate-y-1/2 z-40 flex-col items-center gap-2"
+        className="hidden md:flex fixed right-6 top-1/2 -translate-y-1/2 z-40 flex-col items-center gap-2"
         aria-label="Story scenes"
       >
         {Array.from({ length: TOTAL_SCENES }).map((_, idx) => (
@@ -267,6 +242,7 @@ export function StoryContainer({
             type="button"
             onClick={() => goToScene(idx)}
             title={SCENE_NAMES[idx]}
+            aria-label={`Go to ${SCENE_NAMES[idx]}`}
             className={`rounded-full transition-all duration-300 cursor-pointer ${
               activeScene === idx
                 ? "w-[3px] h-5 bg-accent"
@@ -276,21 +252,20 @@ export function StoryContainer({
         ))}
       </nav>
 
-      {/* Mobile nav pill with frosted glass background */}
       <nav
-        aria-label="Mobile story navigation"
-        className="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 px-3.5 py-1.5 rounded-full bg-[#050507]/90 border border-white/15 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_10px_30px_rgba(0,0,0,0.8)]"
+        aria-label="Story navigation"
+        className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 rounded-full border border-white/15 bg-[#090a0f]/90 px-2 py-2 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.55)]"
       >
         <button
           type="button"
           onClick={prevScene}
           disabled={activeScene === 0}
           aria-label="Previous scene"
-          className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer disabled:opacity-20 transition-all text-white/70 hover:text-white active:scale-95 bg-white/[0.06] hover:bg-white/[0.12] border border-white/10"
+          className="flex h-10 min-w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-white/70 transition-all hover:bg-white/[0.12] hover:text-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-20"
         >
-          ‹
+          <ArrowLeft className="h-4 w-4" />
         </button>
-        <span className="font-mono text-[11px] text-white/60 tabular-nums px-1">
+        <span className="min-w-14 px-1 text-center font-mono text-[10px] uppercase tracking-[0.14em] text-white/60 tabular-nums">
           {activeScene + 1} / {TOTAL_SCENES}
         </span>
         {activeScene < TOTAL_SCENES - 1 ? (
@@ -298,24 +273,23 @@ export function StoryContainer({
             type="button"
             onClick={nextScene}
             aria-label="Next scene"
-            className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-all active:scale-95 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 text-amber-300 shadow-[0_0_12px_rgba(229,169,60,0.25)]"
+            className="flex h-10 min-w-10 items-center justify-center rounded-full border border-amber-400/50 bg-amber-500/20 text-amber-300 shadow-[0_0_12px_rgba(229,169,60,0.2)] transition-all hover:bg-amber-500/30 active:scale-95"
           >
-            ›
+            <ArrowRight className="h-4 w-4" />
           </button>
         ) : (
           <button
             type="button"
             onClick={onReset}
             aria-label="Start over"
-            className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-all active:scale-95 bg-white/[0.08] hover:bg-white/[0.15] border border-white/20 text-white"
+            className="flex h-10 min-w-10 items-center justify-center rounded-full border border-white/20 bg-white/[0.08] text-white transition-all hover:bg-white/[0.15] active:scale-95"
           >
             ↩
           </button>
         )}
       </nav>
 
-      {/* Main scene stage */}
-      <main className="flex-1 w-full h-full relative overflow-hidden z-10">
+      <main className="relative z-10 h-full w-full flex-1 overflow-hidden pb-20 pt-14 sm:pb-6 sm:pt-8">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeScene}
