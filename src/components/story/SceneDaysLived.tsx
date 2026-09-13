@@ -25,23 +25,21 @@ export function SceneDaysLived({ daysLived, identity }: SceneDaysLivedProps) {
       className="w-full max-w-4xl mx-auto select-none px-2 sm:px-4 text-left"
     >
       {/* Header & Colossal Headline */}
-      <div className="border-b border-surface-border pb-4 sm:pb-8 mb-4 sm:mb-8 space-y-2 sm:space-y-4">
+      <div className="border-b border-surface-border pb-4 sm:pb-8 mb-4 sm:mb-8 space-y-2 sm:space-y-3">
         <span className="font-mono text-[11px] sm:text-xs uppercase tracking-widest text-accent font-semibold block">
           TEMPORAL PASSAGE
         </span>
 
-        <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-6">
-          <div className="font-display text-5xl xs:text-6xl sm:text-9xl md:text-[9.5rem] font-bold tracking-tighter text-white tabular-nums leading-none">
+        <div>
+          <h2 className="font-display text-2xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
+            Days on Earth
+          </h2>
+          <div className="font-display text-5xl xs:text-6xl sm:text-8xl md:text-[9rem] font-bold tracking-tighter text-white tabular-nums leading-none my-2 sm:my-3">
             <NumberTicker value={daysLived} delay={0.15} />
           </div>
-          <div>
-            <h2 className="font-display text-xl sm:text-4xl font-bold text-white tracking-tight">
-              Days on Earth
-            </h2>
-            <p className="text-foreground-muted text-xs sm:text-base font-sans mt-1 sm:mt-2 max-w-md leading-relaxed">
-              You have lived through {solarOrbits} complete revolutions around the Sun, drawing roughly {breathsTakenM} million breaths while journeying {galacticKmBillion} billion kilometers through interstellar space.
-            </p>
-          </div>
+          <p className="text-foreground-muted text-xs sm:text-base font-sans max-w-xl leading-relaxed">
+            You have lived through <strong className="text-white font-medium">{solarOrbits}</strong> complete revolutions around the Sun, drawing roughly <strong className="text-white font-medium">{breathsTakenM} million</strong> breaths while journeying <strong className="text-white font-medium">{galacticKmBillion} billion</strong> kilometers through interstellar space.
+          </p>
         </div>
       </div>
 

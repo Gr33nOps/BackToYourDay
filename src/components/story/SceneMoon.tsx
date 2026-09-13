@@ -2,7 +2,6 @@ import { motion } from "framer-motion";
 import { MoonVisual } from "@/components/visuals/MoonVisual";
 import { TiltPlate } from "@/components/ui/TiltPlate";
 import type { MoonPhaseInfo } from "@/lib/astronomy";
-import { NumberTicker } from "@/components/ui/number-ticker";
 
 interface SceneMoonProps {
   moon: MoonPhaseInfo;
@@ -68,7 +67,7 @@ export function SceneMoon({ moon }: SceneMoonProps) {
               {moon.phaseName}
             </h2>
             <div className="text-accent text-xs sm:text-sm font-mono uppercase tracking-wider font-semibold">
-              <NumberTicker value={moon.illumination} delay={0.2} />% illuminated lunar disk
+              {moon.illumination}% illuminated lunar disk
             </div>
           </div>
 

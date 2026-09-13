@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { BirthdayIdentity } from "@/lib/almanac";
-import { NumberTicker } from "@/components/ui/number-ticker";
 
 interface SceneDateRevealProps {
   monthName: string;
@@ -47,7 +46,7 @@ export function SceneDateReveal({
         </h1>
 
         <p className="text-foreground-muted text-sm sm:text-base lg:text-lg font-sans max-w-2xl leading-relaxed">
-          You arrived <strong className="text-white font-medium"><NumberTicker value={yearsAgo} delay={0.2} /> years ago</strong> into the historical record. In the skies above, the Sun traversed the sign of {identity?.western.name}, and the lunar calendar marked the Year of the {identity?.chinese.animal}.
+          You arrived <strong className="text-white font-medium">{yearsAgo} years ago</strong> into the historical record. In the skies above, the Sun traversed the sign of {identity?.western.name}, and the lunar calendar marked the Year of the {identity?.chinese.animal}.
         </p>
       </div>
 
