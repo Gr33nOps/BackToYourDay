@@ -5,3 +5,7 @@ export function clampScene(index, total) {
 export function sceneProgress(index, total) {
   return Math.round(((clampScene(index, total) + 1) / total) * 100);
 }
+
+export function reduceSlideDetails(details) {
+  return details.slice(0, 2);
+}
