@@ -69,40 +69,55 @@ export function SceneDaysLived({ daysLived, identity }: SceneDaysLivedProps) {
     <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
       <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 pointer-events-none w-full h-full z-0" />
 
-      {/* Section label — plain opacity, not y-shifted */}
+      {/* Section label with clearance below HUD */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1, duration: 0.7 }}
-        className="absolute top-8 sm:top-12 left-0 right-0 text-center z-20"
+        className="absolute top-14 sm:top-12 left-0 right-0 text-center z-20"
       >
-        <div className="font-mono text-[10px] uppercase tracking-[0.35em] text-white/45">Life in Numbers</div>
+        <div className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.35em] text-white/50">Life in Numbers</div>
       </motion.div>
 
-      {/* Massive number — primary reveal */}
+      {/* Massive number — center */}
       <motion.div
         initial={{ opacity: 0, scale: 0.75 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10 text-center"
+        className="relative z-10 text-center my-auto px-4"
       >
         <div
           className="font-display font-black text-white leading-none tabular-nums"
-          style={{ fontSize: "clamp(4rem, 22vw, 18rem)" }}
+          style={{ fontSize: "clamp(3.5rem, 18vw, 15rem)" }}
         >
           <NumberTicker value={daysLived} delay={0.1} />
         </div>
-        <div className="font-mono text-sm uppercase tracking-[0.35em] text-white/50 mt-3">
+        <div className="font-mono text-xs sm:text-sm uppercase tracking-[0.35em] text-white/50 mt-2 sm:mt-3">
           days on earth
         </div>
+
+        {/* Next birthday badge — centered under days lived */}
+        {identity && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+            className="mt-3 sm:mt-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+            <span className="font-mono text-[10px] sm:text-[11px] uppercase tracking-wider text-white/60">
+              Next birthday in {identity.metrics.daysUntilNextBirthday} days
+            </span>
+          </motion.div>
+        )}
       </motion.div>
 
-      {/* Stats — bottom, plain opacity */}
+      {/* Stats — bottom with safe clearance above mobile nav */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.6, duration: 0.7 }}
-        className="absolute bottom-8 sm:bottom-12 left-0 right-0 z-20 flex justify-center gap-6 sm:gap-12 px-8"
+        className="absolute bottom-16 sm:bottom-12 left-0 right-0 z-20 flex justify-center gap-5 sm:gap-12 px-4"
       >
         {[
           { val: `${solarOrbits}×`, label: "solar orbits" },
@@ -110,27 +125,13 @@ export function SceneDaysLived({ daysLived, identity }: SceneDaysLivedProps) {
           { val: `~${approximateHeartbeatsM}M`, label: "heartbeats" },
         ].map(s => (
           <div key={s.label} className="text-center">
-            <div className="font-display font-bold text-accent" style={{ fontSize: "clamp(1rem, 3vw, 2rem)" }}>
+            <div className="font-display font-bold text-accent" style={{ fontSize: "clamp(1rem, 2.8vw, 1.8rem)" }}>
               {s.val}
             </div>
-            <div className="font-mono text-[11px] uppercase tracking-widest text-white/45 mt-0.5">{s.label}</div>
+            <div className="font-mono text-[10px] sm:text-[11px] uppercase tracking-widest text-white/45 mt-0.5">{s.label}</div>
           </div>
         ))}
       </motion.div>
-
-      {/* Next birthday — readable contrast */}
-      {identity && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.9 }}
-          className="absolute bottom-8 right-8 sm:right-14 z-20 text-right"
-        >
-          <div className="font-mono text-[11px] uppercase tracking-widest text-white/40">
-            Next birthday in {identity.metrics.daysUntilNextBirthday} days
-          </div>
-        </motion.div>
-      )}
     </div>
   );
 }

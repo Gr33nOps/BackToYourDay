@@ -123,42 +123,42 @@ export function SceneGemstone({ birthstone }: SceneGemstoneProps) {
       />
       <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 pointer-events-none w-full h-full z-[1]" />
 
-      {/* Gem name — top */}
+      {/* Gem name — top with clearance below HUD */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1, duration: 0.7 }}
-        className="absolute top-8 sm:top-12 left-0 right-0 text-center z-20"
+        className="absolute top-14 sm:top-12 left-0 right-0 text-center z-20 px-6"
       >
-        <div className="font-mono text-[10px] uppercase tracking-[0.35em] text-white/45 mb-2">Birthstone</div>
+        <div className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.35em] text-white/50 mb-1.5 sm:mb-2">Birthstone</div>
         <div
           className="font-display font-black text-white leading-none"
-          style={{ fontSize: "clamp(2.5rem, 9vw, 8rem)" }}
+          style={{ fontSize: "clamp(2.2rem, 9vw, 7.5rem)" }}
         >
           {birthstone.primary}
         </div>
       </motion.div>
 
-      {/* Gemstone visual — center. No float-y: gemstones are grounded objects. */}
+      {/* Gemstone visual — center. Grounded and crisp. */}
       <motion.div
         initial={{ opacity: 0, scale: 0.5, rotate: -12 }}
         animate={{ opacity: 1, scale: 1, rotate: 0 }}
         transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10"
-        style={{ filter: `drop-shadow(0 0 60px ${gemColor}50)` }}
+        className="relative z-10 my-auto"
+        style={{ filter: `drop-shadow(0 0 50px ${gemColor}45)` }}
       >
-        <div className="sm:hidden"><GemstoneVisual name={birthstone.primary} colorHex={gemColor} size={160} /></div>
-        <div className="hidden sm:block"><GemstoneVisual name={birthstone.primary} colorHex={gemColor} size={260} /></div>
+        <div className="sm:hidden"><GemstoneVisual name={birthstone.primary} colorHex={gemColor} size={150} /></div>
+        <div className="hidden sm:block"><GemstoneVisual name={birthstone.primary} colorHex={gemColor} size={250} /></div>
       </motion.div>
 
-      {/* Lore — bottom, secondary: plain opacity reveal */}
+      {/* Lore — bottom with clearance above mobile nav */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5, duration: 0.7 }}
-        className="absolute bottom-8 sm:bottom-12 left-0 right-0 text-center z-20 px-8"
+        className="absolute bottom-16 sm:bottom-12 left-0 right-0 text-center z-20 px-6 sm:px-8"
       >
-        <p className="font-sans text-[12px] sm:text-sm text-white/45 max-w-sm mx-auto leading-relaxed">
+        <p className="font-sans text-[12px] sm:text-sm text-white/50 max-w-sm mx-auto leading-relaxed">
           {birthstone.lore?.split(" ").slice(0, 18).join(" ")}…
         </p>
       </motion.div>

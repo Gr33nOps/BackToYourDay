@@ -81,64 +81,64 @@ export function SceneMoon({ moon }: SceneMoonProps) {
     <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
       <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 pointer-events-none w-full h-full z-0" />
 
-      {/* Phase name — top left */}
+      {/* Phase name — top left with clearance below HUD */}
       <motion.div
-        initial={{ opacity: 0, x: -24 }}
+        initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.1, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-        className="absolute top-8 left-8 sm:top-12 sm:left-12 z-20"
+        className="absolute top-14 left-6 sm:top-12 sm:left-12 z-20 max-w-[70%]"
       >
-        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/45 mb-2">Lunar Phase</div>
+        <div className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.3em] text-white/50 mb-1 sm:mb-2">Lunar Phase</div>
         <div
           className="font-display font-black text-white leading-tight"
-          style={{ fontSize: "clamp(2rem, 7vw, 6rem)" }}
+          style={{ fontSize: "clamp(1.8rem, 6vw, 5rem)" }}
         >
           {moon.phaseName}
         </div>
       </motion.div>
 
-      {/* Illumination — bottom right, primary data point */}
+      {/* Illumination — bottom right with clearance above mobile nav */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.25, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="absolute bottom-8 right-8 sm:bottom-12 sm:right-12 z-20 text-right"
+        className="absolute bottom-16 right-6 sm:bottom-12 sm:right-12 z-20 text-right"
       >
         <div
           className="font-display font-black text-accent leading-none tabular-nums"
-          style={{ fontSize: "clamp(3rem, 12vw, 9rem)" }}
+          style={{ fontSize: "clamp(2.4rem, 9vw, 7.5rem)" }}
         >
           {moon.illumination}
-          <span className="text-accent/50" style={{ fontSize: "0.4em" }}>%</span>
+          <span className="text-accent/60" style={{ fontSize: "0.4em" }}>%</span>
         </div>
-        <div className="font-mono text-[10px] uppercase tracking-widest text-white/45 mt-1">illuminated</div>
+        <div className="font-mono text-[10px] uppercase tracking-widest text-white/50 mt-1">illuminated</div>
       </motion.div>
 
-      {/* Moon visual — center. No float-y: moons don't bob up and down. */}
+      {/* Moon visual — center */}
       <motion.div
         initial={{ opacity: 0, scale: 0.7 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.1, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10"
-        style={{ filter: "drop-shadow(0 0 50px rgba(200,210,255,0.28))" }}
+        className="relative z-10 my-auto"
+        style={{ filter: "drop-shadow(0 0 45px rgba(200,210,255,0.25))" }}
       >
         <div className="sm:hidden">
-          <MoonVisual illumination={moon.illumination} phaseFraction={moon.phaseFraction} isWaxing={moon.isWaxing} size={200} />
+          <MoonVisual illumination={moon.illumination} phaseFraction={moon.phaseFraction} isWaxing={moon.isWaxing} size={170} />
         </div>
         <div className="hidden sm:block">
-          <MoonVisual illumination={moon.illumination} phaseFraction={moon.phaseFraction} isWaxing={moon.isWaxing} size={340} />
+          <MoonVisual illumination={moon.illumination} phaseFraction={moon.phaseFraction} isWaxing={moon.isWaxing} size={320} />
         </div>
       </motion.div>
 
-      {/* Cycle info — bottom left */}
+      {/* Cycle info — bottom left with clearance above mobile nav */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5, duration: 0.6 }}
-        className="absolute bottom-8 left-8 sm:bottom-12 sm:left-12 z-20"
+        className="absolute bottom-16 left-6 sm:bottom-12 sm:left-12 z-20"
       >
-        <div className="font-mono text-[10px] uppercase tracking-widest text-white/45">Day {moon.ageDays} of cycle</div>
-        <div className="font-mono text-xs text-white/60 mt-1">{moon.isWaxing ? "↑ Waxing" : "↓ Waning"}</div>
+        <div className="font-mono text-[10px] uppercase tracking-widest text-white/50">Day {moon.ageDays} of cycle</div>
+        <div className="font-mono text-xs text-white/70 mt-0.5">{moon.isWaxing ? "↑ Waxing" : "↓ Waning"}</div>
       </motion.div>
     </div>
   );

@@ -100,7 +100,7 @@ export function SimpleDatePicker({
               value={currentMonth}
               onChange={handleMonthChange}
               aria-label="Birth month"
-              className="w-full appearance-none rounded-lg border border-surface-border bg-canvas hover:border-foreground-dim/50 pl-2 sm:pl-3 pr-5 sm:pr-7 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-foreground tracking-tight transition-colors focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent cursor-pointer truncate"
+              className="w-full appearance-none rounded-lg border border-surface-border bg-canvas hover:border-foreground-dim/50 pl-2 sm:pl-3 pr-5 sm:pr-7 py-2 sm:py-2.5 text-[16px] sm:text-sm font-semibold text-foreground tracking-tight transition-colors focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent cursor-pointer truncate"
             >
               {MONTH_NAMES.map((name, idx) => (
                 <option key={name} value={idx} className="bg-canvas text-foreground">
@@ -122,7 +122,7 @@ export function SimpleDatePicker({
               value={currentDay}
               onChange={handleDayChange}
               aria-label="Birth day"
-              className="w-full appearance-none rounded-lg border border-surface-border bg-canvas hover:border-foreground-dim/50 pl-1.5 sm:pl-2.5 pr-4 sm:pr-6 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-foreground tracking-tight transition-colors focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent cursor-pointer"
+              className="w-full appearance-none rounded-lg border border-surface-border bg-canvas hover:border-foreground-dim/50 pl-1.5 sm:pl-2.5 pr-4 sm:pr-6 py-2 sm:py-2.5 text-[16px] sm:text-sm font-semibold text-foreground tracking-tight transition-colors focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent cursor-pointer"
             >
               {days.map((d) => (
                 <option key={d} value={d} className="bg-canvas text-foreground">
@@ -144,7 +144,7 @@ export function SimpleDatePicker({
               value={currentYear}
               onChange={handleYearChange}
               aria-label="Birth year"
-              className="w-full appearance-none rounded-lg border border-surface-border bg-canvas hover:border-foreground-dim/50 pl-1.5 sm:pl-2.5 pr-4 sm:pr-6 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-foreground tracking-tight transition-colors focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent cursor-pointer"
+              className="w-full appearance-none rounded-lg border border-surface-border bg-canvas hover:border-foreground-dim/50 pl-1.5 sm:pl-2.5 pr-4 sm:pr-6 py-2 sm:py-2.5 text-[16px] sm:text-sm font-semibold text-foreground tracking-tight transition-colors focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent cursor-pointer"
             >
               {years.map((y) => (
                 <option key={y} value={y} className="bg-canvas text-foreground">

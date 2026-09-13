@@ -191,13 +191,13 @@ export function TimeTravelTransition({
           TRAVERSING TIME
         </div>
 
-        {/* Massive year counter */}
+        {/* Massive year counter — responsive clamp to fit 4 digits */}
         <div
           className="font-display font-black tracking-tighter leading-none tabular-nums select-none animate-rgb-split"
           style={{
-            fontSize: "clamp(6rem, 25vw, 22rem)",
+            fontSize: "clamp(4.2rem, 24vw, 20rem)",
             color: "#ffffff",
-            lineHeight: 0.85,
+            lineHeight: 0.88,
           }}
         >
           <span ref={displayYearRef}>{currentYear}</span>
@@ -207,13 +207,13 @@ export function TimeTravelTransition({
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
-          className="mt-8 text-white/60 font-mono text-sm tracking-widest uppercase"
+          className="mt-6 sm:mt-8 text-white/60 font-mono text-xs sm:text-sm tracking-widest uppercase"
         >
           {targetMonthName} {targetDay}, {targetYear}
         </motion.div>
 
         {/* Thin amber progress line */}
-        <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 w-48 h-[1px] bg-white/15 overflow-hidden">
+        <div className="absolute -bottom-12 sm:-bottom-16 left-1/2 -translate-x-1/2 w-36 sm:w-48 h-[1px] bg-white/15 overflow-hidden">
           <motion.div
             initial={{ width: "0%" }}
             animate={{ width: "100%" }}

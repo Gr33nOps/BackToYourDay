@@ -131,49 +131,49 @@ export function SceneZodiac({ zodiac }: SceneZodiacProps) {
     <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
       <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 pointer-events-none w-full h-full z-0" />
 
+      {/* Sign name — on mobile top, on desktop left-aligned */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="absolute top-14 sm:top-16 md:top-1/2 md:-translate-y-1/2 left-0 right-0 md:right-auto md:left-14 z-20 text-center md:text-left px-6"
+      >
+        <div className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.3em] text-accent/60 mb-1.5 sm:mb-2">Sun Sign</div>
+        <div
+          className="font-display font-black text-white leading-none"
+          style={{ fontSize: "clamp(2.2rem, 8vw, 6.5rem)" }}
+        >
+          {zodiac.name}
+        </div>
+        <div className="font-mono text-xs text-white/50 mt-1.5 sm:mt-2 uppercase tracking-wider">{zodiac.element} · {zodiac.dates}</div>
+      </motion.div>
+
       {/* Center glyph with glow */}
       <motion.div
         initial={{ opacity: 0, scale: 0.5 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10 flex flex-col items-center"
-        style={{ filter: "drop-shadow(0 0 60px rgba(229,169,60,0.4))" }}
+        className="relative z-10 flex flex-col items-center my-auto"
+        style={{ filter: "drop-shadow(0 0 50px rgba(229,169,60,0.35))" }}
       >
         <motion.div
           animate={{ scale: [1, 1.04, 1] }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         >
-          <div className="sm:hidden"><ZodiacGlyph sign={zodiac.name} size={110} /></div>
+          <div className="sm:hidden"><ZodiacGlyph sign={zodiac.name} size={120} /></div>
           <div className="hidden sm:block"><ZodiacGlyph sign={zodiac.name} size={180} /></div>
         </motion.div>
       </motion.div>
 
-      {/* Sign name — left */}
-      <motion.div
-        initial={{ opacity: 0, x: -40 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.2, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="absolute left-8 sm:left-14 top-1/2 -translate-y-1/2 z-20"
-      >
-        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent/40 mb-2">Sun Sign</div>
-        <div
-          className="font-display font-black text-white leading-none"
-          style={{ fontSize: "clamp(2.5rem, 8vw, 7rem)" }}
-        >
-          {zodiac.name}
-        </div>
-        <div className="font-mono text-xs text-white/45 mt-2 uppercase tracking-wider">{zodiac.element} · {zodiac.dates}</div>
-      </motion.div>
-
-      {/* Motto — bottom. Secondary: plain opacity only. */}
+      {/* Motto — bottom with safe clearance above mobile nav */}
       {zodiac.latinMotto && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5, duration: 0.7 }}
-          className="absolute bottom-8 sm:bottom-12 left-0 right-0 text-center z-20"
+          className="absolute bottom-16 sm:bottom-12 left-0 right-0 text-center z-20 px-6"
         >
-          <div className="font-mono text-xs italic text-accent/60">"{zodiac.latinMotto}"</div>
+          <div className="font-mono text-xs italic text-accent/70">"{zodiac.latinMotto}"</div>
         </motion.div>
       )}
     </div>

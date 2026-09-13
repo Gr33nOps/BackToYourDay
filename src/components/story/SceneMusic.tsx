@@ -85,20 +85,20 @@ export function SceneMusic({ songs, year }: SceneMusicProps) {
       {/* Waveform canvas */}
       <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 pointer-events-none w-full h-full z-[1]" />
 
-      {/* Left-aligned layout — asymmetric, not centered */}
-      <div className="absolute inset-0 z-20 flex items-center px-8 sm:px-14">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-8 sm:gap-12 w-full">
+      {/* Layout container with safe padding */}
+      <div className="absolute inset-0 z-20 flex items-center px-6 sm:px-14 pt-14 pb-16 sm:py-0 overflow-y-auto">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:gap-12 w-full my-auto">
 
-          {/* Album art — fixed size, no float */}
+          {/* Album art */}
           <motion.div
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="shrink-0"
+            className="shrink-0 rounded-lg overflow-hidden"
             style={{
-              width: "clamp(100px, 16vw, 200px)",
+              width: "clamp(80px, 20vw, 190px)",
               aspectRatio: "1",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.7)",
+              boxShadow: "0 16px 50px rgba(0,0,0,0.75)",
             }}
           >
             <img
@@ -109,24 +109,24 @@ export function SceneMusic({ songs, year }: SceneMusicProps) {
             />
           </motion.div>
 
-          {/* Song info — primary reveal */}
-          <div className="min-w-0 flex-1">
+          {/* Song info */}
+          <div className="min-w-0 flex-1 w-full">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.15, duration: 0.6 }}
-              className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/45 mb-3"
+              className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.3em] text-white/50 mb-2 sm:mb-3"
             >
               Airwaves · {year} · #1
             </motion.div>
 
-            {/* Static title — readable, not scrolling. Rule #55. */}
+            {/* Static title */}
             <motion.h2
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: -16 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-              className="font-display font-black text-white leading-[0.9] break-words"
-              style={{ fontSize: "clamp(2rem, 7vw, 6rem)" }}
+              className="font-display font-black text-white leading-[0.92] break-words"
+              style={{ fontSize: "clamp(1.6rem, 6.5vw, 5.5rem)" }}
             >
               {topSong.title}
             </motion.h2>
@@ -135,38 +135,38 @@ export function SceneMusic({ songs, year }: SceneMusicProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.35, duration: 0.6 }}
-              className="font-mono text-white/55 uppercase tracking-widest mt-3"
-              style={{ fontSize: "clamp(0.7rem, 1.8vw, 1rem)" }}
+              className="font-mono text-white/60 uppercase tracking-widest mt-2 sm:mt-3"
+              style={{ fontSize: "clamp(0.75rem, 1.8vw, 1.05rem)" }}
             >
               {topSong.artist}
+            </motion.div>
+
+            {/* Runner-ups — inside flow on mobile, absolute on desktop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.6 }}
+              className="mt-4 sm:mt-6 md:absolute md:mt-0 md:bottom-12 md:right-14 z-20 flex flex-row md:flex-col gap-2 flex-wrap"
+            >
+              {songs.slice(1, 4).map((s) => (
+                <div
+                  key={s.title}
+                  className="flex items-center gap-2 px-2.5 py-1.5 rounded"
+                  style={{
+                    background: "rgba(0,0,0,0.45)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    backdropFilter: "blur(8px)",
+                    maxWidth: "180px",
+                  }}
+                >
+                  <img src={s.albumArt} alt={s.title} className="w-5 h-5 sm:w-6 sm:h-6 object-cover rounded-sm shrink-0" />
+                  <span className="font-mono text-[10px] text-white/60 truncate">{s.title}</span>
+                </div>
+              ))}
             </motion.div>
           </div>
         </div>
       </div>
-
-      {/* Runner-ups — bottom right, secondary */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6, duration: 0.6 }}
-        className="absolute bottom-6 sm:bottom-10 right-8 sm:right-14 z-20 flex flex-col gap-2"
-      >
-        {songs.slice(1, 4).map((s) => (
-          <div
-            key={s.title}
-            className="flex items-center gap-2 px-3 py-2"
-            style={{
-              background: "rgba(0,0,0,0.45)",
-              border: "1px solid rgba(255,255,255,0.07)",
-              backdropFilter: "blur(8px)",
-              maxWidth: "180px",
-            }}
-          >
-            <img src={s.albumArt} alt={s.title} className="w-6 h-6 object-cover shrink-0" />
-            <span className="font-mono text-[10px] text-white/55 truncate">{s.title}</span>
-          </div>
-        ))}
-      </motion.div>
     </div>
   );
 }

@@ -42,30 +42,29 @@ export function SceneCinema({ movies, year }: SceneCinemaProps) {
         style={{ background: "linear-gradient(to top, rgba(5,5,7,0.9) 0%, transparent 40%)" }}
       />
 
-      {/* Top label */}
-      <div className="absolute top-8 sm:top-12 left-8 sm:left-14 z-10">
-        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/45">
+      {/* Top label with clearance below HUD */}
+      <div className="absolute top-14 sm:top-12 left-6 sm:left-14 z-10">
+        <div className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.3em] text-white/50">
           Theaters · {year}
         </div>
       </div>
 
-      {/* Main content */}
-      <div className="absolute inset-0 z-10 flex items-end pb-8 sm:pb-14 px-8 sm:px-14">
-        <div className="flex gap-6 sm:gap-10 items-end w-full">
+      {/* Main content with clearance above mobile nav */}
+      <div className="absolute bottom-16 sm:bottom-12 left-6 right-6 sm:left-14 sm:right-auto z-10 flex items-end max-w-2xl">
+        <div className="flex gap-4 sm:gap-8 items-end w-full">
           {/* Featured poster */}
           <AnimatePresence mode="wait">
             <motion.div
               key={current.title}
-              initial={{ opacity: 0, x: -30, scale: 0.9 }}
+              initial={{ opacity: 0, x: -20, scale: 0.92 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: 30, scale: 0.9 }}
-              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              className="shrink-0"
+              exit={{ opacity: 0, x: 20, scale: 0.92 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="shrink-0 rounded-lg overflow-hidden"
               style={{
-                width: "clamp(90px, 12vw, 180px)",
+                width: "clamp(75px, 14vw, 170px)",
                 aspectRatio: "2/3",
-                overflow: "hidden",
-                boxShadow: "0 20px 60px rgba(0,0,0,0.7)",
+                boxShadow: "0 16px 50px rgba(0,0,0,0.8)",
               }}
             >
               <img
@@ -82,19 +81,19 @@ export function SceneCinema({ movies, year }: SceneCinemaProps) {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="font-mono text-[10px] uppercase tracking-widest text-accent/60 mb-2"
+              className="font-mono text-[10px] uppercase tracking-widest text-accent/70 mb-1 sm:mb-2"
             >
               #{selected + 1} · {year}
             </motion.div>
             <AnimatePresence mode="wait">
               <motion.h2
                 key={current.title}
-                initial={{ opacity: 0, y: 16 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -16 }}
-                transition={{ duration: 0.4 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.35 }}
                 className="font-display font-black text-white leading-tight truncate"
-                style={{ fontSize: "clamp(1.8rem, 6vw, 5.5rem)" }}
+                style={{ fontSize: "clamp(1.4rem, 5vw, 4.5rem)" }}
               >
                 {current.title}
               </motion.h2>
@@ -106,7 +105,7 @@ export function SceneCinema({ movies, year }: SceneCinemaProps) {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="font-mono text-[11px] text-white/50 mt-1 uppercase tracking-wider"
+                className="font-mono text-[10px] sm:text-[11px] text-white/55 mt-1 uppercase tracking-wider truncate"
               >
                 Dir. {current.director}
               </motion.div>
@@ -115,31 +114,30 @@ export function SceneCinema({ movies, year }: SceneCinemaProps) {
         </div>
       </div>
 
-      {/* Runner-up chips — right side */}
-      <div className="absolute right-6 sm:right-10 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-2.5">
+      {/* Runner-up selector chips — responsive: compact thumbnails on mobile top right, full chips on desktop right */}
+      <div className="absolute top-14 right-6 md:top-1/2 md:-translate-y-1/2 md:right-10 z-20 flex md:flex-col gap-1.5 sm:gap-2.5">
         {movies.slice(0, 4).map((m, i) => (
           <button
             key={m.title}
             type="button"
             onClick={() => setSelected(i)}
-            className={`cursor-pointer transition-all duration-300 flex items-center gap-2 px-2 py-1.5 ${
+            aria-label={`Select ${m.title}`}
+            className={`cursor-pointer transition-all duration-300 flex items-center gap-2 p-1 md:px-2 md:py-1.5 rounded-lg ${
               i === selected
-                ? "opacity-100"
-                : "opacity-45 hover:opacity-80"
+                ? "opacity-100 ring-1 ring-accent/60 bg-black/60"
+                : "opacity-45 hover:opacity-80 bg-black/40"
             }`}
             style={{
-              background: "rgba(0,0,0,0.4)",
-              border: i === selected ? "1px solid rgba(229,169,60,0.4)" : "1px solid rgba(255,255,255,0.06)",
+              border: i === selected ? "1px solid rgba(229,169,60,0.5)" : "1px solid rgba(255,255,255,0.08)",
               backdropFilter: "blur(8px)",
-              maxWidth: "140px",
             }}
           >
             <img
               src={m.posterUrl}
               alt={m.title}
-              className="w-7 h-10 object-cover shrink-0"
+              className="w-6 h-9 sm:w-7 sm:h-10 object-cover shrink-0 rounded-sm"
             />
-            <span className="font-mono text-[10px] text-white/70 truncate leading-tight text-left">
+            <span className="hidden md:inline font-mono text-[10px] text-white/75 truncate leading-tight text-left max-w-[100px]">
               {m.title}
             </span>
           </button>

@@ -253,29 +253,31 @@ export function StoryContainer({
         ))}
       </nav>
 
-      {/* Mobile nav arrows */}
+      {/* Mobile nav pill with glass background to prevent visual clash */}
       <nav
         aria-label="Mobile story navigation"
-        className="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-4"
+        className="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 px-3 py-1.5 rounded-full bg-[#050507]/85 border border-white/10 backdrop-blur-md shadow-2xl"
       >
         <button
           type="button"
           onClick={prevScene}
           disabled={activeScene === 0}
-          className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer disabled:opacity-20 transition-opacity text-white/70"
-          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
+          aria-label="Previous scene"
+          className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer disabled:opacity-20 transition-opacity text-white/70"
+          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
         >
           ‹
         </button>
-        <span className="font-mono text-[11px] text-white/50 tabular-nums">
+        <span className="font-mono text-[11px] text-white/60 tabular-nums px-1">
           {activeScene + 1} / {TOTAL_SCENES}
         </span>
         {activeScene < TOTAL_SCENES - 1 ? (
           <button
             type="button"
             onClick={nextScene}
-            className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer transition-all"
-            style={{ background: "rgba(229,169,60,0.18)", border: "1px solid rgba(229,169,60,0.35)", color: "#e5a93c" }}
+            aria-label="Next scene"
+            className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-all"
+            style={{ background: "rgba(229,169,60,0.2)", border: "1px solid rgba(229,169,60,0.4)", color: "#e5a93c" }}
           >
             ›
           </button>
@@ -283,7 +285,8 @@ export function StoryContainer({
           <button
             type="button"
             onClick={onReset}
-            className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer transition-all"
+            aria-label="Start over"
+            className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-all"
             style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)" }}
           >
             ↩

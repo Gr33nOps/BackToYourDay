@@ -121,72 +121,72 @@ export function SceneDateReveal({ monthName, day, year, weekday, identity }: Sce
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
-        className="relative z-10 flex flex-col items-start justify-center w-full px-8 sm:px-16 lg:px-24 max-w-screen-xl mx-auto"
+        className="relative z-10 flex flex-col items-start justify-center w-full px-6 sm:px-14 lg:px-20 max-w-screen-xl mx-auto py-16 sm:py-12"
       >
-        {/* Tiny eyebrow */}
+        {/* Weekday */}
         <motion.div
-          initial={{ opacity: 0, x: -20 }}
+          initial={{ opacity: 0, x: -16 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.1, duration: 0.6 }}
-          className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent/50 mb-4"
+          className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.3em] text-accent/60 mb-3 sm:mb-4"
         >
           {weekday}
         </motion.div>
 
-        {/* Massive stacked date */}
-        <div className="overflow-hidden">
+        {/* Stacked date */}
+        <div className="overflow-hidden w-full">
           <motion.div
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             transition={{ delay: 0.15, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="font-display font-black text-white leading-[0.88] tracking-tight"
-            style={{ fontSize: "clamp(3.5rem, 12vw, 11rem)" }}
+            className="font-display font-black text-white leading-[0.9] tracking-tight truncate"
+            style={{ fontSize: "clamp(2.4rem, 11vw, 8.5rem)" }}
           >
             {monthName}
           </motion.div>
         </div>
-        <div className="overflow-hidden">
+        <div className="overflow-hidden w-full">
           <motion.div
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             transition={{ delay: 0.22, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="font-display font-black leading-[0.88] tracking-tight"
-            style={{ fontSize: "clamp(4rem, 18vw, 16rem)", color: "#e5a93c" }}
+            className="font-display font-black leading-[0.9] tracking-tight"
+            style={{ fontSize: "clamp(3.5rem, 16vw, 13rem)", color: "#e5a93c" }}
           >
             {day}
           </motion.div>
         </div>
-        <div className="overflow-hidden">
+        <div className="overflow-hidden w-full">
           <motion.div
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             transition={{ delay: 0.3, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="font-display font-black text-white/50 leading-[0.88] tracking-tight"
-            style={{ fontSize: "clamp(3rem, 10vw, 9rem)" }}
+            className="font-display font-black text-white/50 leading-[0.9] tracking-tight"
+            style={{ fontSize: "clamp(2rem, 9vw, 7.5rem)" }}
           >
             {year}
           </motion.div>
         </div>
 
-        {/* Floating stats chips — secondary: plain opacity */}
+        {/* Floating stats chips */}
         {stats.length > 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7, duration: 0.6 }}
-            className="mt-8 flex flex-wrap gap-3"
+            className="mt-6 sm:mt-8 flex flex-wrap gap-2 sm:gap-3"
           >
             {stats.map(s => (
               <div
                 key={s.label}
-                className="flex items-center gap-2 px-3 py-1.5"
+                className="flex items-center gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md"
                 style={{
                   background: "rgba(255,255,255,0.04)",
                   border: "1px solid rgba(255,255,255,0.08)",
                 }}
               >
-                <span className="font-mono text-[11px] uppercase tracking-widest text-white/40">{s.label}</span>
-                <span className="font-mono text-[12px] font-semibold text-white/70">{s.val}</span>
+                <span className="font-mono text-[10px] sm:text-[11px] uppercase tracking-widest text-white/40">{s.label}</span>
+                <span className="font-mono text-[11px] sm:text-[12px] font-semibold text-white/70">{s.val}</span>
               </div>
             ))}
           </motion.div>

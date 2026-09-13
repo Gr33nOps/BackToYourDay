@@ -122,72 +122,69 @@ export function LandingScene({ initialDate, onSubmit }: LandingSceneProps) {
   };
 
   return (
-    <div className="min-h-[100dvh] relative w-full flex flex-col items-center justify-center overflow-hidden bg-[#050507]">
-      {/* Constellation canvas — the only ambient layer */}
+    <div className="min-h-[100dvh] h-full relative w-full flex flex-col items-center justify-between overflow-y-auto overflow-x-hidden bg-[#050507] py-6 sm:py-10 px-4">
+      {/* Constellation canvas */}
       <canvas
         ref={canvasRef}
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-0 w-full h-full"
+        className="pointer-events-none fixed inset-0 z-0 w-full h-full"
       />
 
       {/* Starfield */}
       <StarfieldBackground starCount={140} enableShootingStars={true} />
 
-      {/* Top brand — static, no animation */}
-      <div className="absolute top-6 left-0 right-0 z-20 flex items-center justify-center">
+      {/* Top brand */}
+      <header className="relative z-20 flex items-center justify-center w-full shrink-0">
         <div className="flex items-center gap-2">
-          {/* Static dot — not a live status, so not pulsing */}
           <span className="w-1.5 h-1.5 rounded-full bg-accent" />
-          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/45">
+          <span className="font-mono text-[11px] uppercase tracking-[0.3em] text-white/50">
             BACKTOYOURDAY
           </span>
         </div>
-      </div>
+      </header>
 
       {/* Main content */}
-      <div className="relative z-10 flex flex-col items-center text-center px-6 w-full max-w-xl">
-        {/* Giant headline — primary reveal gets the entrance animation */}
+      <div className="relative z-10 flex flex-col items-center text-center px-2 sm:px-6 w-full max-w-md my-auto py-6">
+        {/* Giant headline — responsive scale */}
         <motion.h1
-          initial={{ opacity: 0, y: 32, filter: "blur(10px)" }}
+          initial={{ opacity: 0, y: 24, filter: "blur(8px)" }}
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
-          className="font-display font-black leading-[0.88] tracking-tight text-white mb-3 select-none"
-          style={{ fontSize: "clamp(3.5rem, 14vw, 10rem)" }}
+          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+          className="font-display font-black leading-[0.88] tracking-tight text-white mb-2 select-none"
+          style={{ fontSize: "clamp(2.8rem, 13vw, 8rem)" }}
         >
           Your
           <br />
-          {/* Accent on "Day." — the product name moment, no glow text-shadow */}
           <span className="text-accent">Day.</span>
         </motion.h1>
 
-        {/* Date range — plain opacity, no y-shift */}
+        {/* Date range */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.55, duration: 0.7 }}
-          className="font-mono text-[11px] uppercase tracking-[0.25em] text-white/45 mb-10"
+          transition={{ delay: 0.4, duration: 0.6 }}
+          className="font-mono text-[11px] uppercase tracking-[0.25em] text-white/50 mb-6 sm:mb-8"
         >
           1920 — present
         </motion.p>
 
-        {/* Date picker card — opacity + slight scale, no y on card */}
+        {/* Date picker card */}
         <motion.div
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.35, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ delay: 0.3, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="w-full"
         >
           <div
-            className="w-full p-6 sm:p-8 space-y-5"
+            className="w-full p-5 sm:p-7 space-y-4 sm:space-y-5 rounded-2xl border border-white/10"
             style={{
-              background: "rgba(13,14,20,0.88)",
-              border: "1px solid rgba(229,169,60,0.14)",
-              backdropFilter: "blur(16px)",
+              background: "rgba(13,14,20,0.85)",
+              backdropFilter: "blur(20px)",
             }}
           >
             {/* Selected date display */}
             <div className="text-center">
-              <div className="font-mono text-[10px] uppercase tracking-widest text-white/40 mb-1">
+              <div className="font-mono text-[10px] uppercase tracking-widest text-white/45 mb-1">
                 selected date
               </div>
               <motion.div
@@ -195,7 +192,7 @@ export function LandingScene({ initialDate, onSubmit }: LandingSceneProps) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.2 }}
-                className="font-display text-2xl sm:text-3xl font-bold text-white"
+                className="font-display text-xl sm:text-2xl font-bold text-white tracking-tight"
               >
                 {formattedDate}
               </motion.div>
@@ -203,15 +200,14 @@ export function LandingScene({ initialDate, onSubmit }: LandingSceneProps) {
 
             <SimpleDatePicker value={date} onChange={setDate} />
 
-            {/* CTA — specific action label, not "Get Started" */}
+            {/* CTA */}
             <button
               type="button"
               onClick={handleSubmit}
-              className="w-full relative cursor-pointer transition-colors"
+              className="w-full relative cursor-pointer transition-all rounded-lg py-3 sm:py-3.5"
               style={{
-                padding: "14px 24px",
-                background: "rgba(229,169,60,0.10)",
-                border: "1px solid rgba(229,169,60,0.38)",
+                background: "rgba(229,169,60,0.12)",
+                border: "1px solid rgba(229,169,60,0.45)",
                 color: "#e5a93c",
                 fontFamily: "monospace",
                 fontSize: "11px",
@@ -220,10 +216,10 @@ export function LandingScene({ initialDate, onSubmit }: LandingSceneProps) {
                 fontWeight: "700",
               }}
               onMouseEnter={e => {
-                (e.currentTarget as HTMLButtonElement).style.background = "rgba(229,169,60,0.2)";
+                (e.currentTarget as HTMLButtonElement).style.background = "rgba(229,169,60,0.22)";
               }}
               onMouseLeave={e => {
-                (e.currentTarget as HTMLButtonElement).style.background = "rgba(229,169,60,0.10)";
+                (e.currentTarget as HTMLButtonElement).style.background = "rgba(229,169,60,0.12)";
               }}
             >
               Reveal This Day →
@@ -232,17 +228,12 @@ export function LandingScene({ initialDate, onSubmit }: LandingSceneProps) {
         </motion.div>
       </div>
 
-      {/* Bottom — readable size, readable contrast */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.1, duration: 0.7 }}
-        className="absolute bottom-6 left-0 right-0 z-20 flex items-center justify-center"
-      >
-        <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-white/35">
+      {/* Bottom hint */}
+      <footer className="relative z-20 flex items-center justify-center w-full shrink-0 py-2">
+        <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-white/40 text-center">
           Astronomy · Weather · Culture
         </span>
-      </motion.div>
+      </footer>
     </div>
   );
 }

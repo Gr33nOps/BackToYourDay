@@ -44,18 +44,18 @@ export function SceneApod({ sky, formattedDate }: SceneApodProps) {
         style={{ background: "linear-gradient(to bottom, rgba(5,5,7,0.55) 0%, transparent 25%, transparent 70%, rgba(5,5,7,0.8) 100%)" }}
       />
 
-      {/* Top label */}
+      {/* Top label with clearance below HUD */}
       <motion.div
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: imageLoaded ? 1 : 0, y: imageLoaded ? 0 : -16 }}
         transition={{ delay: 0.4, duration: 0.6 }}
-        className="absolute top-8 sm:top-12 left-8 sm:left-14 z-10 flex items-center gap-2"
+        className="absolute top-14 sm:top-12 left-6 sm:left-14 z-10 flex items-center gap-2"
       >
         <span className="w-1.5 h-1.5 rounded-full bg-accent" />
-        <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-white/50">NASA · {formattedDate}</span>
+        <span className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.25em] text-white/60">NASA · {formattedDate}</span>
       </motion.div>
 
-      {/* View full res link — top right */}
+      {/* View full res link — top right with clearance below HUD */}
       {(sky.hdUrl || sky.imageUrl) && imageLoaded && (
         <motion.a
           initial={{ opacity: 0 }}
@@ -64,7 +64,7 @@ export function SceneApod({ sky, formattedDate }: SceneApodProps) {
           href={sky.hdUrl || sky.imageUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="absolute top-8 sm:top-12 right-8 sm:right-14 z-10 flex items-center gap-1.5 cursor-pointer text-white/50 hover:text-white/80 transition-colors"
+          className="absolute top-14 sm:top-12 right-6 sm:right-14 z-10 flex items-center gap-1.5 cursor-pointer text-white/50 hover:text-white/80 transition-colors px-2 py-0.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-sm"
           style={{ textDecoration: "none" }}
         >
           <ExternalLink className="w-3.5 h-3.5" />
@@ -72,23 +72,23 @@ export function SceneApod({ sky, formattedDate }: SceneApodProps) {
         </motion.a>
       )}
 
-      {/* Bottom: title + credit */}
+      {/* Bottom: title + credit with clearance above mobile nav */}
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: imageLoaded ? 1 : 0, y: imageLoaded ? 0 : 24 }}
         transition={{ delay: 0.5, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="absolute bottom-8 sm:bottom-12 left-8 sm:left-14 right-8 sm:right-14 z-10"
+        className="absolute bottom-16 sm:bottom-12 left-6 sm:left-14 right-6 sm:right-14 z-10"
       >
-        <div className="font-mono text-[11px] uppercase tracking-[0.3em] text-white/45 mb-2">
+        <div className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.3em] text-white/50 mb-1 sm:mb-2">
           {sky.constellationFocus || "Deep Space"}
         </div>
         <h2
           className="font-display font-black text-white leading-tight"
-          style={{ fontSize: "clamp(1.5rem, 5vw, 4rem)" }}
+          style={{ fontSize: "clamp(1.3rem, 4.5vw, 3.8rem)" }}
         >
           {sky.title}
         </h2>
-        <div className="font-mono text-[11px] text-white/40 mt-2">
+        <div className="font-mono text-[10px] sm:text-[11px] text-white/45 mt-1 sm:mt-2">
           {sky.copyright || "NASA / ESA Space Telescopes"}
         </div>
       </motion.div>

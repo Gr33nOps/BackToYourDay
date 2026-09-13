@@ -82,44 +82,44 @@ export function SceneBotanical({ botanicals }: SceneBotanicalProps) {
       <div className="absolute bottom-0 left-0 right-0 h-1/3 z-[1] pointer-events-none"
         style={{ background: "linear-gradient(to top, rgba(5,5,7,0.6), transparent)" }} />
 
-      {/* Flower name — top. Primary reveal: fade only. */}
+      {/* Flower name — top with clearance below HUD */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1, duration: 0.8 }}
-        className="absolute top-8 sm:top-12 left-0 right-0 text-center z-20"
+        className="absolute top-14 sm:top-12 left-0 right-0 text-center z-20 px-6"
       >
-        <div className="font-mono text-[10px] uppercase tracking-[0.35em] text-white/45 mb-2">Birth Flower</div>
+        <div className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.35em] text-white/50 mb-1.5 sm:mb-2">Birth Flower</div>
         <div
           className="font-display font-black text-white leading-none"
-          style={{ fontSize: "clamp(2.5rem, 9vw, 8rem)" }}
+          style={{ fontSize: "clamp(2.2rem, 9vw, 7.5rem)" }}
         >
           {flower.name}
         </div>
       </motion.div>
 
-      {/* Botanical visual — center. No float-y. */}
+      {/* Botanical visual — center */}
       <motion.div
         initial={{ opacity: 0, scale: 0.6 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10"
+        className="relative z-10 my-auto"
         style={{ filter: "drop-shadow(0 16px 50px rgba(100,200,100,0.22))" }}
       >
-        <div className="sm:hidden"><BotanicalVisual name={flower.name} size={180} /></div>
-        <div className="hidden sm:block"><BotanicalVisual name={flower.name} size={300} /></div>
+        <div className="sm:hidden"><BotanicalVisual name={flower.name} size={160} /></div>
+        <div className="hidden sm:block"><BotanicalVisual name={flower.name} size={280} /></div>
       </motion.div>
 
-      {/* Meaning — bottom. Secondary: plain opacity. */}
+      {/* Meaning — bottom with clearance above mobile nav */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5, duration: 0.7 }}
-        className="absolute bottom-8 sm:bottom-12 left-0 right-0 text-center z-20"
+        className="absolute bottom-16 sm:bottom-12 left-0 right-0 text-center z-20 px-6"
       >
-        <div className="font-mono text-sm text-white/55 italic">{flower.meaning}</div>
+        <div className="font-mono text-xs sm:text-sm text-white/60 italic">{flower.meaning}</div>
         {botanicals.secondary && (
-          <div className="font-mono text-[11px] text-white/35 mt-1 uppercase tracking-widest">
+          <div className="font-mono text-[10px] sm:text-[11px] text-white/40 mt-1 uppercase tracking-widest">
             Also: {botanicals.secondary.name}
           </div>
         )}

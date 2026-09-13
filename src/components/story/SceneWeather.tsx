@@ -142,14 +142,14 @@ export function SceneWeather({ weather }: SceneWeatherProps) {
         <AnimatePresence mode="wait">
           <motion.div
             key={`${unit}-${temp}`}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
+            exit={{ opacity: 0, y: -16 }}
             transition={{ duration: 0.25 }}
             className="font-display font-black text-white leading-none tabular-nums"
             style={{
-              fontSize: "clamp(6rem, 28vw, 24rem)",
-              textShadow: "0 0 120px rgba(229,169,60,0.2)",
+              fontSize: "clamp(4.5rem, 24vw, 22rem)",
+              textShadow: "0 0 100px rgba(229,169,60,0.18)",
             }}
           >
             {temp}
@@ -157,44 +157,44 @@ export function SceneWeather({ weather }: SceneWeatherProps) {
           </motion.div>
         </AnimatePresence>
 
-        <div className="font-display text-white/50 font-bold mt-2" style={{ fontSize: "clamp(1rem, 4vw, 3rem)" }}>
+        <div className="font-display text-white/60 font-bold mt-1 sm:mt-2" style={{ fontSize: "clamp(1rem, 3.5vw, 2.5rem)" }}>
           {weather.condition}
         </div>
       </motion.div>
 
-      {/* Sunrise — bottom left */}
+      {/* Sunrise — bottom left with clearance above mobile nav */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
-        className="absolute bottom-8 sm:bottom-12 left-8 sm:left-14 z-20"
+        className="absolute bottom-16 sm:bottom-12 left-6 sm:left-14 z-20"
       >
-        <div className="font-mono text-[11px] uppercase tracking-widest text-white/40">Sunrise</div>
-        <div className="font-mono text-sm text-white/55 mt-0.5">{weather.sunriseTime}</div>
+        <div className="font-mono text-[10px] sm:text-[11px] uppercase tracking-widest text-white/45">Sunrise</div>
+        <div className="font-mono text-xs sm:text-sm text-white/65 mt-0.5">{weather.sunriseTime}</div>
       </motion.div>
 
-      {/* Sunset — bottom right */}
+      {/* Sunset — bottom right with clearance above mobile nav */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
-        className="absolute bottom-8 sm:bottom-12 right-8 sm:right-14 z-20 text-right"
+        className="absolute bottom-16 sm:bottom-12 right-6 sm:right-14 z-20 text-right"
       >
-        <div className="font-mono text-[11px] uppercase tracking-widest text-white/40">Sunset</div>
-        <div className="font-mono text-sm text-white/55 mt-0.5">{weather.sunsetTime}</div>
+        <div className="font-mono text-[10px] sm:text-[11px] uppercase tracking-widest text-white/45">Sunset</div>
+        <div className="font-mono text-xs sm:text-sm text-white/65 mt-0.5">{weather.sunsetTime}</div>
       </motion.div>
 
-      {/* Unit toggle — top right */}
-      <div className="absolute top-8 right-8 sm:top-12 sm:right-14 z-20 flex gap-1">
+      {/* Unit toggle — positioned with clearance below top HUD */}
+      <div className="absolute top-14 right-6 sm:top-12 sm:right-14 z-20 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
         {(["C", "F"] as const).map(u => (
           <button
             key={u}
             type="button"
             onClick={() => handleUnitChange(u)}
-            className={`px-2 py-1 font-mono text-[10px] font-bold cursor-pointer transition-all ${
-              unit === u ? "text-accent" : "text-white/35 hover:text-white/55"
+            className={`px-2 py-0.5 font-mono text-[10px] font-bold cursor-pointer transition-all rounded-full ${
+              unit === u ? "text-accent bg-accent/15" : "text-white/40 hover:text-white/60"
             }`}
-            style={{ background: "none", border: "none" }}
+            style={{ border: "none" }}
           >
             °{u}
           </button>
