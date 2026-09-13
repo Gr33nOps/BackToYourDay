@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { BirthdayIdentity } from "@/lib/almanac";
 import { prefersReducedMotion } from "@/utils/motion";
+import { PillTag } from "@/components/ui/PillTag";
 
 interface SceneDateRevealProps {
   monthName: string;
@@ -168,26 +169,23 @@ export function SceneDateReveal({ monthName, day, year, weekday, identity }: Sce
           </motion.div>
         </div>
 
-        {/* Floating stats chips */}
+        {/* Floating stats chips (21st MCP modern glass pill tags) */}
         {stats.length > 0 && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7, duration: 0.6 }}
             className="mt-6 sm:mt-8 flex flex-wrap gap-2 sm:gap-3"
           >
-            {stats.map(s => (
-              <div
+            {stats.map((s, idx) => (
+              <PillTag
                 key={s.label}
-                className="flex items-center gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md"
-                style={{
-                  background: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                }}
-              >
-                <span className="font-mono text-[10px] sm:text-[11px] uppercase tracking-widest text-white/40">{s.label}</span>
-                <span className="font-mono text-[11px] sm:text-[12px] font-semibold text-white/70">{s.val}</span>
-              </div>
+                label={s.label}
+                value={s.val}
+                dot={idx === 0}
+                dotColor="amber"
+                variant="glass"
+              />
             ))}
           </motion.div>
         )}

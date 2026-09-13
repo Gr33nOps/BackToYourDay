@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { MovieItem } from "@/lib/culture";
+import { PillTag } from "@/components/ui/PillTag";
+import { sound } from "@/lib/sound";
+import { Film } from "lucide-react";
 
 interface SceneCinemaProps {
   movies: MovieItem[];
@@ -11,138 +14,179 @@ export function SceneCinema({ movies, year }: SceneCinemaProps) {
   const [selected, setSelected] = useState(0);
   if (!movies || movies.length === 0) return null;
 
-  const current = movies[selected];
+  // Showcase top 3 movies prominently
+  const displayMovies = movies.slice(0, 3);
+  const current = displayMovies[selected] || displayMovies[0];
+
+  const handleSelect = (index: number) => {
+    sound.playTick();
+    setSelected(index);
+  };
 
   return (
-    <div className="relative w-full h-full overflow-hidden">
-      {/* Blurred poster background */}
+    <div className="relative w-full h-full overflow-hidden flex flex-col justify-between">
+      {/* Blurred poster background of current selected film */}
       <AnimatePresence mode="wait">
         <motion.div
           key={current.title}
-          initial={{ opacity: 0, scale: 1.1 }}
-          animate={{ opacity: 1, scale: 1.06 }}
+          initial={{ opacity: 0, scale: 1.08 }}
+          animate={{ opacity: 1, scale: 1.03 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           className="absolute inset-0 z-0"
           style={{
             backgroundImage: `url(${current.posterUrl})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
-            filter: "blur(28px) brightness(0.35) saturate(0.7)",
+            filter: "blur(32px) brightness(0.28) saturate(0.7)",
             transform: "scale(1.15)",
           }}
         />
       </AnimatePresence>
 
-      {/* Strong vignette */}
-      <div className="absolute inset-0 z-[1] pointer-events-none"
-        style={{ background: "radial-gradient(ellipse at 30% 50%, rgba(5,5,7,0.1) 0%, rgba(5,5,7,0.7) 80%)" }}
+      {/* Atmospheric dark gradients and subtle vignette */}
+      <div
+        className="absolute inset-0 z-[1] pointer-events-none"
+        style={{
+          background: "radial-gradient(ellipse at 50% 40%, rgba(5,5,7,0.2) 0%, rgba(5,5,7,0.85) 85%)",
+        }}
       />
-      <div className="absolute inset-0 z-[1] pointer-events-none"
-        style={{ background: "linear-gradient(to top, rgba(5,5,7,0.9) 0%, transparent 40%)" }}
+      <div
+        className="absolute inset-0 z-[1] pointer-events-none"
+        style={{
+          background: "linear-gradient(to top, rgba(5,5,7,0.95) 0%, transparent 45%, rgba(5,5,7,0.6) 100%)",
+        }}
       />
 
-      {/* Top label with clearance below HUD */}
-      <div className="absolute top-14 sm:top-12 left-6 sm:left-14 z-10">
-        <div className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.3em] text-white/50">
-          Theaters · {year}
+      {/* Top header with clearance below HUD */}
+      <header className="relative z-10 pt-14 sm:pt-12 px-5 sm:px-12 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <PillTag
+            icon={<Film className="w-3 h-3 text-accent" />}
+            label="THEATERS"
+            value={`${year} BOX OFFICE`}
+            dot
+            dotColor="amber"
+            variant="glass"
+          />
         </div>
-      </div>
-
-      {/* Main content with clearance above mobile nav */}
-      <div className="absolute bottom-16 sm:bottom-12 left-6 right-6 sm:left-14 sm:right-auto z-10 flex items-end max-w-2xl">
-        <div className="flex gap-4 sm:gap-8 items-end w-full">
-          {/* Featured poster */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={current.title}
-              initial={{ opacity: 0, x: -20, scale: 0.92 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: 20, scale: 0.92 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              className="shrink-0 rounded-lg overflow-hidden"
-              style={{
-                width: "clamp(75px, 14vw, 170px)",
-                aspectRatio: "2/3",
-                boxShadow: "0 16px 50px rgba(0,0,0,0.8)",
-              }}
-            >
-              <img
-                src={current.posterUrl}
-                alt={current.title}
-                loading="lazy"
-                className="w-full h-full object-cover"
-              />
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Info */}
-          <div className="flex-1 min-w-0">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="font-mono text-[10px] uppercase tracking-widest text-accent/70 mb-1 sm:mb-2"
-            >
-              #{selected + 1} · {year}
-            </motion.div>
-            <AnimatePresence mode="wait">
-              <motion.h2
-                key={current.title}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.35 }}
-                className="font-display font-black text-white leading-tight truncate"
-                style={{ fontSize: "clamp(1.4rem, 5vw, 4.5rem)" }}
-              >
-                {current.title}
-              </motion.h2>
-            </AnimatePresence>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={current.director}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="font-mono text-[10px] sm:text-[11px] text-white/55 mt-1 uppercase tracking-wider truncate"
-              >
-                Dir. {current.director}
-              </motion.div>
-            </AnimatePresence>
-          </div>
+        <div className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.25em] text-white/45">
+          Top 3 Releases
         </div>
-      </div>
+      </header>
 
-      {/* Runner-up selector chips — responsive: compact thumbnails on mobile top right, full chips on desktop right */}
-      <div className="absolute top-14 right-6 md:top-1/2 md:-translate-y-1/2 md:right-10 z-20 flex md:flex-col gap-1.5 sm:gap-2.5">
-        {movies.slice(0, 4).map((m, i) => (
-          <button
-            key={m.title}
-            type="button"
-            onClick={() => setSelected(i)}
-            aria-label={`Select ${m.title}`}
-            className={`cursor-pointer transition-all duration-300 flex items-center gap-2 p-1 md:px-2 md:py-1.5 rounded-lg ${
-              i === selected
-                ? "opacity-100 ring-1 ring-accent/60 bg-black/60"
-                : "opacity-45 hover:opacity-80 bg-black/40"
-            }`}
-            style={{
-              border: i === selected ? "1px solid rgba(229,169,60,0.5)" : "1px solid rgba(255,255,255,0.08)",
-              backdropFilter: "blur(8px)",
-            }}
+      {/* Main 3-film showcase deck */}
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-8 max-w-5xl mx-auto w-full my-auto py-2 sm:py-4">
+        {/* Active spotlight details banner */}
+        <div className="text-center mb-3 sm:mb-6 max-w-xl mx-auto">
+          <motion.div
+            key={`spotlight-badge-${current.title}`}
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent/80 mb-1"
           >
-            <img
-              src={m.posterUrl}
-              alt={m.title}
-              className="w-6 h-9 sm:w-7 sm:h-10 object-cover shrink-0 rounded-sm"
-            />
-            <span className="hidden md:inline font-mono text-[10px] text-white/75 truncate leading-tight text-left max-w-[100px]">
-              {m.title}
-            </span>
-          </button>
-        ))}
-      </div>
+            #{selected + 1} Spotlight · {year}
+          </motion.div>
+          <motion.h2
+            key={`spotlight-title-${current.title}`}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35 }}
+            className="font-display font-black text-white leading-tight tracking-tight text-xl sm:text-3xl md:text-4xl truncate"
+          >
+            {current.title}
+          </motion.h2>
+          <motion.p
+            key={`spotlight-dir-${current.title}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+            className="font-mono text-[10px] sm:text-xs text-white/55 uppercase tracking-wider mt-1 truncate"
+          >
+            Directed by {current.director}
+          </motion.p>
+        </div>
+
+        {/* 3 Prominent Movie Cards Display */}
+        <div className="grid grid-cols-3 gap-2.5 sm:gap-5 md:gap-7 w-full max-w-4xl items-end">
+          {displayMovies.map((movie, index) => {
+            const isSelected = index === selected;
+            return (
+              <motion.button
+                key={movie.title}
+                type="button"
+                onClick={() => handleSelect(index)}
+                whileHover={{ y: -4 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ duration: 0.2 }}
+                aria-label={`Select #${index + 1} movie: ${movie.title}`}
+                className={`group relative flex flex-col items-center rounded-xl p-1.5 sm:p-2.5 text-left transition-all duration-300 cursor-pointer overflow-hidden ${
+                  isSelected
+                    ? "bg-white/[0.08] border-amber-400/60 shadow-[0_0_28px_rgba(229,169,60,0.22),inset_0_1px_0_rgba(255,255,255,0.25)] ring-1 ring-amber-400/40"
+                    : "bg-white/[0.03] hover:bg-white/[0.06] border-white/10 hover:border-white/25 opacity-85 hover:opacity-100"
+                } border backdrop-blur-md`}
+              >
+                {/* Poster container with rank badge overlay */}
+                <div className="relative w-full aspect-[2/3] rounded-lg overflow-hidden mb-2 sm:mb-3 shadow-xl bg-black/40">
+                  <img
+                    src={movie.posterUrl}
+                    alt={movie.title}
+                    loading="eager"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  {/* Subtle top-to-bottom inner shadow on poster */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 pointer-events-none" />
+
+                  {/* Rank badge */}
+                  <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 z-10">
+                    <span
+                      className={`inline-flex items-center justify-center font-mono text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full backdrop-blur-md shadow-md ${
+                        index === 0
+                          ? "bg-amber-500/90 text-black border border-amber-300"
+                          : "bg-black/75 text-white/90 border border-white/20"
+                      }`}
+                    >
+                      #{index + 1}
+                    </span>
+                  </div>
+
+                  {/* Active indicator dot on poster */}
+                  {isSelected && (
+                    <div className="absolute top-2 right-2 z-10">
+                      <span className="flex h-2 w-2 relative">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400" />
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Movie Title & Info */}
+                <div className="w-full px-0.5 text-center sm:text-left">
+                  <h3
+                    className={`font-display font-bold leading-tight truncate text-xs sm:text-sm md:text-base ${
+                      isSelected ? "text-amber-200" : "text-white/90"
+                    }`}
+                  >
+                    {movie.title}
+                  </h3>
+                  <p className="font-mono text-[9px] sm:text-[10px] text-white/50 uppercase tracking-wider truncate mt-0.5">
+                    {movie.director}
+                  </p>
+                </div>
+              </motion.button>
+            );
+          })}
+        </div>
+      </main>
+
+      {/* Bottom spacer for clearance above mobile nav */}
+      <footer className="relative z-10 pb-16 sm:pb-12 text-center">
+        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/35">
+          Tap any poster to spotlight
+        </span>
+      </footer>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { SimpleDatePicker } from "@/components/ui/SimpleDatePicker";
 import { StarfieldBackground } from "@/components/effects/StarfieldBackground";
 import { sound } from "@/lib/sound";
 import { prefersReducedMotion } from "@/utils/motion";
+import { ShimmerButton } from "@/components/ui/ShimmerButton";
 
 interface LandingSceneProps {
   initialDate?: Date;
@@ -200,30 +201,13 @@ export function LandingScene({ initialDate, onSubmit }: LandingSceneProps) {
 
             <SimpleDatePicker value={date} onChange={setDate} />
 
-            {/* CTA */}
-            <button
-              type="button"
+            {/* CTA (21st MCP modern shimmer button) */}
+            <ShimmerButton
               onClick={handleSubmit}
-              className="w-full relative cursor-pointer transition-all rounded-lg py-3 sm:py-3.5"
-              style={{
-                background: "rgba(229,169,60,0.12)",
-                border: "1px solid rgba(229,169,60,0.45)",
-                color: "#e5a93c",
-                fontFamily: "monospace",
-                fontSize: "11px",
-                letterSpacing: "0.22em",
-                textTransform: "uppercase",
-                fontWeight: "700",
-              }}
-              onMouseEnter={e => {
-                (e.currentTarget as HTMLButtonElement).style.background = "rgba(229,169,60,0.22)";
-              }}
-              onMouseLeave={e => {
-                (e.currentTarget as HTMLButtonElement).style.background = "rgba(229,169,60,0.12)";
-              }}
+              className="w-full text-center justify-center py-3.5 sm:py-4"
             >
               Reveal This Day →
-            </button>
+            </ShimmerButton>
           </div>
         </motion.div>
       </div>

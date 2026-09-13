@@ -6,6 +6,9 @@ import type { HistoricalWeather } from "@/lib/weather";
 import { Share2, Copy, RotateCcw, Check } from "lucide-react";
 import { prefersReducedMotion } from "@/utils/motion";
 
+import { PillTag } from "@/components/ui/PillTag";
+import { ShimmerButton, GlassButton, GhostPillButton } from "@/components/ui/ShimmerButton";
+
 interface SceneShareEndingProps {
   day: number;
   monthName: string;
@@ -57,7 +60,6 @@ export function SceneShareEnding({
 
     const render = () => {
       ctx.clearRect(0, 0, w, h);
-      // No pulsing center glow — just particles
       for (const p of particles) {
         p.x += p.vx; p.y += p.vy;
         if (p.y < -10) { p.y = h + 10; p.x = Math.random() * w; }
@@ -87,7 +89,6 @@ export function SceneShareEnding({
     });
   };
 
-  // Plain text labels — no emoji as design system elements (Rule #34)
   const summary = [
     { label: "Sign", val: identity.western.name },
     { label: "Moon", val: moon.phaseName },
@@ -100,7 +101,7 @@ export function SceneShareEnding({
     <div className="relative w-full h-full flex items-center justify-center overflow-y-auto px-4 py-16 sm:py-12">
       <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 pointer-events-none w-full h-full z-0" />
 
-      <div className="relative z-10 w-full max-w-md text-center my-auto">
+      <div className="relative z-10 w-full max-w-lg text-center my-auto">
         {/* Date */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -124,89 +125,61 @@ export function SceneShareEnding({
           <span className="text-accent">Story.</span>
         </motion.h2>
 
-        {/* Summary chips */}
+        {/* Summary tags (21st MCP modern glass pill tags) */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35, duration: 0.7 }}
-          className="flex flex-wrap justify-center gap-1.5 sm:gap-2 mb-6 sm:mb-8"
+          className="flex flex-wrap justify-center gap-2 sm:gap-2.5 mb-7 sm:mb-9"
         >
-          {summary.map(s => (
-            <div
+          {summary.map((s, idx) => (
+            <PillTag
               key={s.label}
-              className="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md flex items-center gap-1.5 sm:gap-2"
-              style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
-              }}
-            >
-              <span className="font-mono text-[10px] text-white/45 uppercase tracking-widest">{s.label}</span>
-              <span className="font-mono text-[11px] text-white/75 font-medium">{s.val}</span>
-            </div>
+              label={s.label}
+              value={s.val}
+              dot={idx === 0}
+              dotColor="amber"
+              variant="glass"
+            />
           ))}
         </motion.div>
 
-        {/* Action buttons with proper tap targets */}
+        {/* Action buttons (21st MCP shimmer & glass buttons) */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.6 }}
-          className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 justify-center w-full max-w-xs sm:max-w-none mx-auto"
+          className="flex flex-col sm:flex-row gap-3 justify-center items-center w-full max-w-sm sm:max-w-none mx-auto"
         >
-          <button
-            type="button"
+          <ShimmerButton
             onClick={handleShare}
-            className="flex items-center justify-center gap-2 px-6 py-3 sm:py-3.5 rounded-lg cursor-pointer transition-all min-h-[44px]"
-            style={{
-              background: "rgba(229,169,60,0.12)",
-              border: "1px solid rgba(229,169,60,0.45)",
-              color: "#e5a93c",
-              fontFamily: "monospace",
-              fontSize: "11px",
-              letterSpacing: "0.2em",
-              textTransform: "uppercase",
-              fontWeight: "700",
-            }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(229,169,60,0.22)"; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(229,169,60,0.12)"; }}
+            icon={<Share2 className="w-3.5 h-3.5" />}
           >
-            <Share2 className="w-3.5 h-3.5" />
             Share
-          </button>
+          </ShimmerButton>
 
-          <button
-            type="button"
+          <GlassButton
             onClick={handleCopy}
-            className="flex items-center justify-center gap-2 px-6 py-3 sm:py-3.5 rounded-lg cursor-pointer transition-all min-h-[44px]"
-            style={{
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.12)",
-              color: copied ? "#e5a93c" : "rgba(255,255,255,0.7)",
-              fontFamily: "monospace",
-              fontSize: "11px",
-              letterSpacing: "0.2em",
-              textTransform: "uppercase",
-              fontWeight: "700",
-            }}
+            icon={copied ? <Check className="w-3.5 h-3.5 text-accent" /> : <Copy className="w-3.5 h-3.5" />}
           >
-            {copied ? <Check className="w-3.5 h-3.5 text-accent" /> : <Copy className="w-3.5 h-3.5" />}
             {copied ? "Copied!" : "Copy Link"}
-          </button>
+          </GlassButton>
         </motion.div>
 
         {/* Reset — safe clearance above mobile nav */}
-        <motion.button
-          type="button"
-          onClick={onReset}
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-          className="mt-6 mb-4 sm:mb-0 flex items-center justify-center gap-2 mx-auto cursor-pointer transition-colors text-white/45 hover:text-white/70 py-2 px-4"
-          style={{ background: "none", border: "none", fontFamily: "monospace", fontSize: "11px", letterSpacing: "0.22em", textTransform: "uppercase" }}
+          transition={{ delay: 0.75 }}
+          className="mt-6 mb-4 sm:mb-0 flex justify-center"
         >
-          <RotateCcw className="w-3 h-3" />
-          Choose Another Date
-        </motion.button>
+          <GhostPillButton
+            onClick={onReset}
+            icon={<RotateCcw className="w-3 h-3" />}
+          >
+            Choose Another Date
+          </GhostPillButton>
+        </motion.div>
       </div>
     </div>
   );

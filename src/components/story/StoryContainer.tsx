@@ -253,18 +253,17 @@ export function StoryContainer({
         ))}
       </nav>
 
-      {/* Mobile nav pill with glass background to prevent visual clash */}
+      {/* Mobile nav pill with frosted glass background */}
       <nav
         aria-label="Mobile story navigation"
-        className="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 px-3 py-1.5 rounded-full bg-[#050507]/85 border border-white/10 backdrop-blur-md shadow-2xl"
+        className="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 px-3.5 py-1.5 rounded-full bg-[#050507]/90 border border-white/15 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_10px_30px_rgba(0,0,0,0.8)]"
       >
         <button
           type="button"
           onClick={prevScene}
           disabled={activeScene === 0}
           aria-label="Previous scene"
-          className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer disabled:opacity-20 transition-opacity text-white/70"
-          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+          className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer disabled:opacity-20 transition-all text-white/70 hover:text-white active:scale-95 bg-white/[0.06] hover:bg-white/[0.12] border border-white/10"
         >
           ‹
         </button>
@@ -276,8 +275,7 @@ export function StoryContainer({
             type="button"
             onClick={nextScene}
             aria-label="Next scene"
-            className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-all"
-            style={{ background: "rgba(229,169,60,0.2)", border: "1px solid rgba(229,169,60,0.4)", color: "#e5a93c" }}
+            className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-all active:scale-95 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 text-amber-300 shadow-[0_0_12px_rgba(229,169,60,0.25)]"
           >
             ›
           </button>
@@ -286,8 +284,7 @@ export function StoryContainer({
             type="button"
             onClick={onReset}
             aria-label="Start over"
-            className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-all"
-            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)" }}
+            className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-all active:scale-95 bg-white/[0.08] hover:bg-white/[0.15] border border-white/20 text-white"
           >
             ↩
           </button>
