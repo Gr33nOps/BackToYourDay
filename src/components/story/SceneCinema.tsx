@@ -1,5 +1,5 @@
-import { motion } from "framer-motion";
-import { TiltPlate } from "@/components/ui/TiltPlate";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import type { MovieItem } from "@/lib/culture";
 
 interface SceneCinemaProps {
@@ -8,110 +8,143 @@ interface SceneCinemaProps {
 }
 
 export function SceneCinema({ movies, year }: SceneCinemaProps) {
+  const [selected, setSelected] = useState(0);
   if (!movies || movies.length === 0) return null;
 
-  const topMovie = movies[0];
-  const runnerUps = movies.slice(1, 3);
+  const current = movies[selected];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-      className="w-full max-w-4xl mx-auto select-none px-2 sm:px-4"
-    >
-      {/* Editorial Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between border-b border-surface-border pb-2.5 sm:pb-4 mb-4 sm:mb-8 text-left">
-        <div>
-          <span className="font-mono text-[11px] sm:text-xs uppercase tracking-widest text-accent font-semibold block mb-0.5 sm:mb-1">
-            THEATRICAL ARCHIVE
-          </span>
-          <h2 className="font-display text-2xl sm:text-5xl font-bold tracking-tight text-white">
-            In Theaters {year}
-          </h2>
+    <div className="relative w-full h-full overflow-hidden">
+      {/* Blurred poster background */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={current.title}
+          initial={{ opacity: 0, scale: 1.1 }}
+          animate={{ opacity: 1, scale: 1.06 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="absolute inset-0 z-0"
+          style={{
+            backgroundImage: `url(${current.posterUrl})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            filter: "blur(28px) brightness(0.35) saturate(0.7)",
+            transform: "scale(1.15)",
+          }}
+        />
+      </AnimatePresence>
+
+      {/* Strong vignette */}
+      <div className="absolute inset-0 z-[1] pointer-events-none"
+        style={{ background: "radial-gradient(ellipse at 30% 50%, rgba(5,5,7,0.1) 0%, rgba(5,5,7,0.7) 80%)" }}
+      />
+      <div className="absolute inset-0 z-[1] pointer-events-none"
+        style={{ background: "linear-gradient(to top, rgba(5,5,7,0.9) 0%, transparent 40%)" }}
+      />
+
+      {/* Top label */}
+      <div className="absolute top-8 sm:top-12 left-8 sm:left-14 z-10">
+        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/25">
+          Theaters · {year}
         </div>
-        <p className="text-foreground-muted text-[11px] sm:text-xs font-mono mt-1 sm:mt-0 uppercase tracking-wide">
-          Box Office Records of Your Birth Year
-        </p>
       </div>
 
-      {/* Asymmetric Box Office Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-8 items-start text-left">
-        {/* Primary Feature: #1 Box Office Hit with 3D Tilt */}
-        <div className="md:col-span-7">
-          <TiltPlate>
-            <div className="flex flex-row gap-3.5 sm:gap-6 p-3 sm:p-5 border border-surface-border bg-surface/70">
-              <div className="w-24 sm:w-44 md:w-48 shrink-0 aspect-[2/3] overflow-hidden border border-surface-border bg-surface relative">
-                <img
-                  src={topMovie.posterUrl}
-                  alt={topMovie.title}
-                  loading="lazy"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-black/90 border border-surface-border text-[9px] sm:text-[10px] font-mono text-accent font-semibold">
-                  #01 CHAMPION
-                </div>
-              </div>
-
-              <div className="flex flex-col justify-between py-0.5 min-w-0 flex-1">
-                <div className="space-y-1 sm:space-y-2">
-                  <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-widest text-foreground-dim block">
-                    THEATRICAL PREMIERE
-                  </span>
-                  <h3 className="font-display text-lg sm:text-2xl md:text-3xl font-bold text-white leading-tight truncate">
-                    {topMovie.title}
-                  </h3>
-                  <p className="text-xs font-mono text-accent truncate">
-                    Directed by {topMovie.director}
-                  </p>
-                  <p className="text-xs font-sans text-foreground-muted leading-relaxed line-clamp-3 sm:line-clamp-4 pt-0.5">
-                    {topMovie.tagline || "One of the standout theatrical releases drawing audiences to cinemas nationwide."}
-                  </p>
-                </div>
-                <div className="pt-2 sm:pt-4 mt-2 sm:mt-4 border-t border-surface-border text-[10px] sm:text-[11px] font-mono text-foreground-dim">
-                  Release Year: <span className="text-white font-medium">{year}</span>
-                </div>
-              </div>
-            </div>
-          </TiltPlate>
-        </div>
-
-        {/* Secondary Records: #2 and #3 Contenders */}
-        <div className="md:col-span-5 space-y-2.5 sm:space-y-4">
-          <div className="text-[10px] font-mono uppercase tracking-widest text-foreground-dim pb-1 border-b border-surface-border">
-            TOP BOX OFFICE RUNNERS-UP
-          </div>
-
-          {runnerUps.map((movie, idx) => (
-            <div
-              key={movie.title}
-              className="flex gap-3 sm:gap-4 p-2.5 sm:p-3.5 border border-surface-border bg-surface/40 hover:bg-surface/70 transition-colors"
+      {/* Main content */}
+      <div className="absolute inset-0 z-10 flex items-end pb-8 sm:pb-14 px-8 sm:px-14">
+        <div className="flex gap-6 sm:gap-10 items-end w-full">
+          {/* Featured poster */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={current.title}
+              initial={{ opacity: 0, x: -30, scale: 0.9 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 30, scale: 0.9 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              className="shrink-0"
+              style={{
+                width: "clamp(90px, 12vw, 180px)",
+                aspectRatio: "2/3",
+                overflow: "hidden",
+                boxShadow: "0 20px 60px rgba(0,0,0,0.7)",
+              }}
             >
-              <div className="w-12 sm:w-16 shrink-0 aspect-[2/3] overflow-hidden border border-surface-border bg-surface relative">
-                <img
-                  src={movie.posterUrl}
-                  alt={movie.title}
-                  loading="lazy"
-                  className="w-full h-full object-cover"
-                />
-              </div>
+              <img
+                src={current.posterUrl}
+                alt={current.title}
+                loading="lazy"
+                className="w-full h-full object-cover"
+              />
+            </motion.div>
+          </AnimatePresence>
 
-              <div className="flex flex-col justify-center space-y-0.5 sm:space-y-1 min-w-0 flex-1">
-                <div className="text-[9px] sm:text-[10px] font-mono font-semibold text-accent">
-                  NO. 0{idx + 2} IN THEATERS
-                </div>
-                <h4 className="font-display font-bold text-xs sm:text-base text-white truncate">
-                  {movie.title}
-                </h4>
-                <p className="text-[11px] sm:text-xs text-foreground-dim font-mono truncate">
-                  Dir. {movie.director}
-                </p>
-              </div>
-            </div>
-          ))}
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="font-mono text-[10px] uppercase tracking-widest text-accent/60 mb-2"
+            >
+              #{selected + 1} · {year}
+            </motion.div>
+            <AnimatePresence mode="wait">
+              <motion.h2
+                key={current.title}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -16 }}
+                transition={{ duration: 0.4 }}
+                className="font-display font-black text-white leading-tight truncate"
+                style={{ fontSize: "clamp(1.8rem, 6vw, 5.5rem)" }}
+              >
+                {current.title}
+              </motion.h2>
+            </AnimatePresence>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={current.director}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="font-mono text-[11px] text-white/30 mt-1 uppercase tracking-wider"
+              >
+                Dir. {current.director}
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
       </div>
-    </motion.div>
+
+      {/* Runner-up chips — right side */}
+      <div className="absolute right-6 sm:right-10 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-2.5">
+        {movies.slice(0, 4).map((m, i) => (
+          <button
+            key={m.title}
+            type="button"
+            onClick={() => setSelected(i)}
+            className={`cursor-pointer transition-all duration-300 flex items-center gap-2 px-2 py-1.5 ${
+              i === selected
+                ? "opacity-100"
+                : "opacity-30 hover:opacity-60"
+            }`}
+            style={{
+              background: "rgba(0,0,0,0.4)",
+              border: i === selected ? "1px solid rgba(229,169,60,0.4)" : "1px solid rgba(255,255,255,0.06)",
+              backdropFilter: "blur(8px)",
+              maxWidth: "140px",
+            }}
+          >
+            <img
+              src={m.posterUrl}
+              alt={m.title}
+              className="w-7 h-10 object-cover shrink-0"
+            />
+            <span className="font-mono text-[9px] text-white/70 truncate leading-tight text-left">
+              {m.title}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
-

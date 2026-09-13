@@ -1,14 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  ChevronDown,
-  ChevronUp,
-  ChevronLeft,
-  ChevronRight,
-  RotateCcw,
-  Volume2,
-  VolumeX,
-} from "lucide-react";
+import { RotateCcw, Volume2, VolumeX } from "lucide-react";
 import type { BirthdayIdentity } from "@/lib/almanac";
 import type { MoonPhaseInfo } from "@/lib/astronomy";
 import type { HistoricalWeather } from "@/lib/weather";
@@ -43,29 +35,55 @@ interface StoryContainerProps {
 }
 
 const SCENE_NAMES = [
-  "The Day You Were Born",
-  "Your Sun Sign",
-  "Your Birthstone",
-  "Your Birth Flower",
-  "The Moon That Night",
-  "Atmospheric Weather",
-  "A View of the Universe",
-  "Movies in Theaters",
-  "Songs on the Radio",
-  "Your Life in Numbers",
-  "Birthday Keepsake",
+  "The Day",
+  "Sun Sign",
+  "Birthstone",
+  "Birth Flower",
+  "The Moon",
+  "Weather",
+  "The Universe",
+  "Cinema",
+  "Music",
+  "Life in Numbers",
+  "Your Story",
 ];
 
+// Clip-path transition variants cycling through 4 styles
+type TransitionStyle = "iris" | "curtain" | "slide-up" | "slide-down";
+
+function getTransitionVariants(style: TransitionStyle, dir: 1 | -1) {
+  switch (style) {
+    case "iris":
+      return {
+        initial: { clipPath: "circle(0% at 50% 50%)", opacity: 0 },
+        animate: { clipPath: "circle(150% at 50% 50%)", opacity: 1 },
+        exit:    { clipPath: "circle(0% at 50% 50%)", opacity: 0 },
+        transition: { duration: 0.65, ease: [0.16, 1, 0.3, 1] },
+      };
+    case "curtain":
+      return {
+        initial: { clipPath: "inset(0 0 100% 0)", opacity: 1 },
+        animate: { clipPath: "inset(0 0 0% 0)", opacity: 1 },
+        exit:    { clipPath: "inset(100% 0 0% 0)", opacity: 1 },
+        transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },
+      };
+    default: // slide
+      return {
+        initial: { opacity: 0, y: dir > 0 ? 60 : -60, filter: "blur(8px)" },
+        animate: { opacity: 1, y: 0, filter: "blur(0px)" },
+        exit:    { opacity: 0, y: dir > 0 ? -60 : 60, filter: "blur(8px)" },
+        transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
+      };
+  }
+}
+
+function cycleStyle(scene: number): TransitionStyle {
+  const styles: TransitionStyle[] = ["iris", "slide-up", "curtain", "slide-down", "iris", "slide-up", "curtain", "slide-down", "iris", "slide-up", "curtain"];
+  return styles[scene % styles.length] ?? "slide-up";
+}
+
 export function StoryContainer({
-  date,
-  monthName,
-  identity,
-  moon,
-  weather,
-  sky,
-  movies,
-  songs,
-  onReset,
+  date, monthName, identity, moon, weather, sky, movies, songs, onReset,
 }: StoryContainerProps) {
   const [activeScene, setActiveScene] = useState(0);
   const [direction, setDirection] = useState<1 | -1>(1);
@@ -74,9 +92,7 @@ export function StoryContainer({
 
   const day = date.getDate();
   const year = date.getFullYear();
-  const weekday = identity.metrics.weekdayBorn;
   const formattedDate = `${monthName} ${day}, ${year}`;
-
   const TOTAL_SCENES = 11;
 
   const handleToggleAudio = () => {
@@ -84,74 +100,49 @@ export function StoryContainer({
     setAudioActive(next);
   };
 
-  const goToScene = useCallback(
-    (index: number) => {
-      if (index === activeScene || isTransitioning.current) return;
-      if (index >= 0 && index < TOTAL_SCENES) {
-        isTransitioning.current = true;
-        setDirection(index > activeScene ? 1 : -1);
-        setActiveScene(index);
-        sound.playShutter();
-        setTimeout(() => {
-          isTransitioning.current = false;
-        }, 550);
-      }
-    },
-    [activeScene, TOTAL_SCENES]
-  );
+  const goToScene = useCallback((index: number) => {
+    if (index === activeScene || isTransitioning.current) return;
+    if (index >= 0 && index < TOTAL_SCENES) {
+      isTransitioning.current = true;
+      setDirection(index > activeScene ? 1 : -1);
+      setActiveScene(index);
+      sound.playShutter();
+      setTimeout(() => { isTransitioning.current = false; }, 700);
+    }
+  }, [activeScene]);
 
   const nextScene = useCallback(() => {
-    if (activeScene < TOTAL_SCENES - 1) {
-      goToScene(activeScene + 1);
-    }
-  }, [activeScene, TOTAL_SCENES, goToScene]);
-
-  const prevScene = useCallback(() => {
-    if (activeScene > 0) {
-      goToScene(activeScene - 1);
-    }
+    if (activeScene < TOTAL_SCENES - 1) goToScene(activeScene + 1);
   }, [activeScene, goToScene]);
 
-  // Keyboard navigation & global shortcuts
+  const prevScene = useCallback(() => {
+    if (activeScene > 0) goToScene(activeScene - 1);
+  }, [activeScene, goToScene]);
+
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "ArrowDown" || e.key === "PageDown" || (e.key === " " && !e.shiftKey)) {
-        e.preventDefault();
-        nextScene();
+        e.preventDefault(); nextScene();
       } else if (e.key === "ArrowUp" || e.key === "PageUp" || (e.key === " " && e.shiftKey)) {
-        e.preventDefault();
-        prevScene();
-      } else if (e.key === "ArrowRight") {
-        e.preventDefault();
-        nextScene();
-      } else if (e.key === "ArrowLeft") {
-        e.preventDefault();
-        prevScene();
-      } else if (e.key === "r" || e.key === "R" || e.key === "Escape") {
-        onReset();
-      }
+        e.preventDefault(); prevScene();
+      } else if (e.key === "ArrowRight") { e.preventDefault(); nextScene(); }
+      else if (e.key === "ArrowLeft") { e.preventDefault(); prevScene(); }
+      else if (e.key === "r" || e.key === "R" || e.key === "Escape") { onReset(); }
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [nextScene, prevScene, onReset]);
 
-  // Wheel scroll navigation with momentum throttle
   const lastWheelTime = useRef(0);
   const handleWheel = (e: React.WheelEvent) => {
     const now = performance.now();
-    if (now - lastWheelTime.current < 550) return;
-
+    if (now - lastWheelTime.current < 600) return;
     if (Math.abs(e.deltaY) > 24) {
       lastWheelTime.current = now;
-      if (e.deltaY > 0) {
-        nextScene();
-      } else {
-        prevScene();
-      }
+      if (e.deltaY > 0) nextScene(); else prevScene();
     }
   };
 
-  // Safe horizontal touch swipe support (allows normal vertical scrolling)
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -161,130 +152,160 @@ export function StoryContainer({
   const handleTouchEnd = (e: React.TouchEvent) => {
     const diffX = touchStartX.current - e.changedTouches[0].clientX;
     const diffY = touchStartY.current - e.changedTouches[0].clientY;
-
-    // Only trigger slide transition if horizontal gesture is predominant
     if (Math.abs(diffX) > 45 && Math.abs(diffX) > Math.abs(diffY) * 1.4) {
-      if (diffX > 0) {
-        nextScene();
-      } else {
-        prevScene();
-      }
+      if (diffX > 0) nextScene(); else prevScene();
+    } else if (Math.abs(diffY) > 60 && Math.abs(diffY) > Math.abs(diffX) * 1.4) {
+      if (diffY > 0) nextScene(); else prevScene();
     }
   };
+
+  const style = cycleStyle(activeScene);
+  const vars = getTransitionVariants(style, direction);
 
   return (
     <div
       onWheel={handleWheel}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      className="relative w-full h-[100dvh] min-h-[100dvh] overflow-hidden bg-canvas text-foreground select-none flex flex-col overscroll-contain"
+      className="relative w-full h-[100dvh] min-h-[100dvh] overflow-hidden bg-[#050507] text-foreground select-none flex flex-col overscroll-contain"
     >
-      {/* Background Starfield Canvas */}
-      <StarfieldBackground starCount={100} enableShootingStars={true} />
+      <StarfieldBackground starCount={90} enableShootingStars={true} />
 
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-40 bg-canvas/90 backdrop-blur-md border-b border-surface-border px-3 sm:px-8 py-2.5 sm:py-3 flex items-center justify-between transition-colors">
-        {/* Brand & Date */}
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <button
-            type="button"
-            onClick={onReset}
-            className="flex items-center gap-1.5 sm:gap-2 font-mono text-[11px] sm:text-xs uppercase tracking-[0.15em] sm:tracking-[0.2em] font-semibold text-foreground hover:text-white transition-colors cursor-pointer shrink-0"
-          >
-            <span className="w-2 h-2 rounded-full bg-accent" />
-            <span className="hidden xs:inline">BackToYourDay</span>
-            <span className="xs:hidden">BTYD</span>
-          </button>
-          <span className="hidden sm:inline text-foreground-dim text-xs">&bull;</span>
-          <span className="hidden md:inline text-xs font-mono text-foreground-muted truncate">
-            {formattedDate}
+      {/* Floating minimal top HUD */}
+      <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-5 py-3 pointer-events-none">
+        {/* Brand */}
+        <button
+          type="button"
+          onClick={onReset}
+          className="pointer-events-auto flex items-center gap-2 cursor-pointer group"
+          style={{ background: "none", border: "none", padding: 0 }}
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/30 group-hover:text-white/60 transition-colors">
+            BTYD
           </span>
-        </div>
+        </button>
 
-        {/* Scene Progress & Audio & Reset */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeScene}
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 4 }}
-              transition={{ duration: 0.15 }}
-              className="text-xs text-foreground-muted font-mono flex items-center gap-1.5 sm:gap-2"
-            >
-              <span className="px-1.5 sm:px-2 py-0.5 rounded bg-surface border border-surface-border text-[10px] sm:text-[11px] text-accent font-semibold">
-                {String(activeScene + 1).padStart(2, "0")}/{String(TOTAL_SCENES).padStart(2, "0")}
-              </span>
-              <span className="hidden md:inline text-foreground font-sans font-medium text-xs max-w-[150px] lg:max-w-none truncate">
-                {SCENE_NAMES[activeScene]}
-              </span>
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Audio Synthesizer Toggle */}
-          <button
-            type="button"
-            onClick={handleToggleAudio}
-            className="inline-flex items-center justify-center p-1.5 sm:px-3 sm:py-1.5 rounded-lg border border-surface-border bg-surface hover:bg-surface-raised text-foreground-muted hover:text-white text-xs font-mono transition-colors cursor-pointer"
-            title={audioActive ? "Mute audio effects" : "Enable tactile sound effects"}
-            aria-label={audioActive ? "Mute audio" : "Unmute audio"}
-          >
-            {audioActive ? (
-              <>
-                <Volume2 className="w-3.5 h-3.5 text-accent" />
-                <span className="hidden sm:inline ml-1.5 text-accent">Audio On</span>
-              </>
-            ) : (
-              <>
-                <VolumeX className="w-3.5 h-3.5 text-foreground-dim" />
-                <span className="hidden sm:inline ml-1.5 text-foreground-dim">Audio Off</span>
-              </>
-            )}
-          </button>
-
-          {/* Change Date Button */}
-          <button
-            type="button"
-            onClick={onReset}
-            className="inline-flex items-center justify-center gap-1.5 p-1.5 sm:px-3 sm:py-1.5 rounded-lg border border-surface-border bg-surface hover:bg-surface-raised text-foreground-muted hover:text-white text-xs font-mono transition-colors cursor-pointer"
-            title="Try another birthday"
-            aria-label="Change birthday date"
-          >
-            <RotateCcw className="w-3.5 h-3.5 text-accent" />
-            <span className="hidden sm:inline">Change Date</span>
-          </button>
-        </div>
-
-        {/* Crisp Archival Amber Progress Line */}
-        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-surface-border">
-          <motion.div
-            className="h-full bg-accent"
-            animate={{ width: `${((activeScene + 1) / TOTAL_SCENES) * 100}%` }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-          />
-        </div>
-      </header>
-
-      {/* Main Animated Stage with Directional Transitions */}
-      <main className="flex-1 w-full h-full relative pt-14 sm:pt-16 pb-16 sm:pb-0 overflow-hidden z-10">
+        {/* Scene label */}
         <AnimatePresence mode="wait">
           <motion.div
             key={activeScene}
-            initial={{ opacity: 0, y: direction > 0 ? 20 : -20 }}
+            initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: direction > 0 ? -20 : 20 }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full h-full overflow-y-auto overflow-x-hidden px-3 sm:px-8"
+            exit={{ opacity: 0, y: 6 }}
+            transition={{ duration: 0.2 }}
+            className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/25"
           >
-            <div className="min-h-full w-full flex flex-col justify-start sm:justify-center items-center py-4 sm:py-8">
+            {String(activeScene + 1).padStart(2, "0")} / {String(TOTAL_SCENES).padStart(2, "0")}
+            <span className="hidden sm:inline ml-2 text-white/15">
+              · {SCENE_NAMES[activeScene]}
+            </span>
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Controls */}
+        <div className="pointer-events-auto flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleToggleAudio}
+            className="cursor-pointer text-white/25 hover:text-white/60 transition-colors"
+            style={{ background: "none", border: "none", padding: "4px" }}
+          >
+            {audioActive ? <Volume2 className="w-3.5 h-3.5 text-accent/60" /> : <VolumeX className="w-3.5 h-3.5" />}
+          </button>
+          <button
+            type="button"
+            onClick={onReset}
+            className="cursor-pointer text-white/25 hover:text-white/60 transition-colors"
+            style={{ background: "none", border: "none", padding: "4px" }}
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </header>
+
+      {/* Progress arc — thin hairline at bottom */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 h-[2px] bg-white/5">
+        <motion.div
+          className="h-full bg-accent/60"
+          animate={{ width: `${((activeScene + 1) / TOTAL_SCENES) * 100}%` }}
+          transition={{ duration: 0.35, ease: "easeOut" }}
+        />
+      </div>
+
+      {/* Right dot nav (desktop) */}
+      <nav
+        className="hidden md:flex fixed right-5 top-1/2 -translate-y-1/2 z-40 flex-col items-center gap-2"
+        aria-label="Story scenes"
+      >
+        {Array.from({ length: TOTAL_SCENES }).map((_, idx) => (
+          <button
+            key={idx}
+            type="button"
+            onClick={() => goToScene(idx)}
+            title={SCENE_NAMES[idx]}
+            className={`rounded-full transition-all duration-300 cursor-pointer ${
+              activeScene === idx
+                ? "w-[3px] h-5 bg-accent"
+                : "w-[3px] h-[3px] bg-white/15 hover:bg-white/40"
+            }`}
+          />
+        ))}
+      </nav>
+
+      {/* Mobile nav arrows */}
+      <nav
+        aria-label="Mobile story navigation"
+        className="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-4"
+      >
+        <button
+          type="button"
+          onClick={prevScene}
+          disabled={activeScene === 0}
+          className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer disabled:opacity-20 transition-opacity"
+          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
+        >
+          ‹
+        </button>
+        <span className="font-mono text-[10px] text-white/30 tabular-nums">
+          {activeScene + 1} / {TOTAL_SCENES}
+        </span>
+        {activeScene < TOTAL_SCENES - 1 ? (
+          <button
+            type="button"
+            onClick={nextScene}
+            className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer transition-all"
+            style={{ background: "rgba(229,169,60,0.15)", border: "1px solid rgba(229,169,60,0.3)", color: "#e5a93c" }}
+          >
+            ›
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={onReset}
+            className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer transition-all"
+            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)" }}
+          >
+            ↩
+          </button>
+        )}
+      </nav>
+
+      {/* Main scene stage */}
+      <main className="flex-1 w-full h-full relative overflow-hidden z-10">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeScene}
+            initial={vars.initial}
+            animate={vars.animate}
+            exit={vars.exit}
+            transition={vars.transition}
+            className="absolute inset-0 w-full h-full"
+          >
+            <div className="w-full h-full flex flex-col items-center justify-center overflow-y-auto overflow-x-hidden">
               {activeScene === 0 && (
-                <SceneDateReveal
-                  monthName={monthName}
-                  day={day}
-                  year={year}
-                  weekday={weekday}
-                  identity={identity}
-                />
+                <SceneDateReveal monthName={monthName} day={day} year={year}
+                  weekday={identity.metrics.weekdayBorn} identity={identity} />
               )}
               {activeScene === 1 && <SceneZodiac zodiac={identity.western} />}
               {activeScene === 2 && <SceneGemstone birthstone={identity.birthstone} />}
@@ -299,13 +320,8 @@ export function StoryContainer({
               )}
               {activeScene === 10 && (
                 <SceneShareEnding
-                  day={day}
-                  monthName={monthName}
-                  year={year}
-                  identity={identity}
-                  moon={moon}
-                  weather={weather}
-                  onReset={onReset}
+                  day={day} monthName={monthName} year={year}
+                  identity={identity} moon={moon} weather={weather} onReset={onReset}
                 />
               )}
             </div>
@@ -313,113 +329,6 @@ export function StoryContainer({
         </AnimatePresence>
       </main>
 
-      {/* Mobile Bottom Navigation Bar (Screens < md) */}
-      <nav
-        aria-label="Mobile story navigation"
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-canvas/95 backdrop-blur-lg border-t border-surface-border px-3 py-2 flex items-center justify-between pb-[max(0.6rem,env(safe-area-inset-bottom))]"
-      >
-        <button
-          type="button"
-          onClick={prevScene}
-          disabled={activeScene === 0}
-          aria-label="Previous scene"
-          className="inline-flex items-center gap-1 px-3 py-2 rounded-lg border border-surface-border bg-surface disabled:opacity-30 disabled:pointer-events-none text-foreground hover:text-white text-xs font-mono font-medium transition-colors cursor-pointer"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          <span>Prev</span>
-        </button>
-
-        <div className="flex flex-col items-center justify-center min-w-0 px-2 text-center">
-          <span className="text-[10px] font-mono text-accent font-semibold tracking-wider">
-            {String(activeScene + 1).padStart(2, "0")} OF {String(TOTAL_SCENES).padStart(2, "0")}
-          </span>
-          <span className="text-[11px] font-medium text-foreground truncate max-w-[170px]">
-            {SCENE_NAMES[activeScene]}
-          </span>
-        </div>
-
-        {activeScene < TOTAL_SCENES - 1 ? (
-          <button
-            type="button"
-            onClick={nextScene}
-            aria-label="Next scene"
-            className="inline-flex items-center gap-1 px-3 py-2 rounded-lg bg-accent text-canvas font-mono font-bold text-xs hover:bg-accent-hover transition-colors cursor-pointer shadow-md"
-          >
-            <span>Next</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={onReset}
-            aria-label="Finish and explore another birthday"
-            className="inline-flex items-center gap-1 px-3 py-2 rounded-lg bg-white text-canvas font-mono font-bold text-xs hover:bg-neutral-200 transition-colors cursor-pointer shadow-md"
-          >
-            <span>Restart</span>
-            <RotateCcw className="w-3.5 h-3.5" />
-          </button>
-        )}
-      </nav>
-
-      {/* Side Dot Navigation (Desktop only) */}
-      <nav
-        aria-label="Story scenes"
-        className="hidden md:flex fixed right-6 top-1/2 -translate-y-1/2 z-40 flex-col items-center gap-2 p-1.5 rounded-full bg-surface/90 border border-surface-border backdrop-blur-sm"
-      >
-        {Array.from({ length: TOTAL_SCENES }).map((_, idx) => (
-          <button
-            key={idx}
-            type="button"
-            onClick={() => goToScene(idx)}
-            title={SCENE_NAMES[idx]}
-            aria-label={`Go to scene ${idx + 1}: ${SCENE_NAMES[idx]}`}
-            className={`rounded-full transition-all duration-200 cursor-pointer ${
-              activeScene === idx
-                ? "w-1.5 h-4 bg-accent"
-                : "w-1.5 h-1.5 bg-foreground-dim/40 hover:bg-foreground-muted"
-            }`}
-          />
-        ))}
-      </nav>
-
-      {/* Desktop Arrow Controls (Floating Bottom Right, Desktop only) */}
-      <div className="hidden md:flex fixed bottom-6 right-6 z-40 items-center gap-2">
-        {activeScene > 0 && (
-          <button
-            type="button"
-            onClick={prevScene}
-            aria-label="Previous scene"
-            className="w-10 h-10 rounded-lg bg-surface border border-surface-border text-foreground hover:text-white hover:bg-surface-raised flex items-center justify-center transition-colors cursor-pointer"
-          >
-            <ChevronUp className="w-4 h-4" />
-          </button>
-        )}
-        {activeScene < TOTAL_SCENES - 1 && (
-          <button
-            type="button"
-            onClick={nextScene}
-            aria-label="Next scene"
-            className="w-10 h-10 rounded-lg bg-white text-canvas hover:bg-neutral-200 font-bold border border-white/20 flex items-center justify-center transition-colors cursor-pointer"
-          >
-            <ChevronDown className="w-4 h-4" />
-          </button>
-        )}
-      </div>
-
-      {/* Desktop Keyboard Instrument Legend */}
-      <div className="hidden lg:flex fixed bottom-6 left-6 z-40 items-center gap-2 font-mono text-[11px] text-foreground-dim/70 tracking-wider select-none pointer-events-none">
-        <span className="px-1.5 py-0.5 border border-surface-border rounded bg-surface/60 text-foreground-muted">↑</span>
-        <span className="px-1.5 py-0.5 border border-surface-border rounded bg-surface/60 text-foreground-muted">↓</span>
-        <span>SCROLL</span>
-        <span className="text-surface-border">&bull;</span>
-        <span className="px-1.5 py-0.5 border border-surface-border rounded bg-surface/60 text-foreground-muted">SPACE</span>
-        <span>NEXT</span>
-        <span className="text-surface-border">&bull;</span>
-        <span className="px-1.5 py-0.5 border border-surface-border rounded bg-surface/60 text-foreground-muted">R</span>
-        <span>RESET</span>
-      </div>
-
-      {/* Procedural Film Grain Overlay */}
       <FilmGrain />
     </div>
   );

@@ -1,9 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import type { BirthdayIdentity } from "@/lib/almanac";
 import type { MoonPhaseInfo } from "@/lib/astronomy";
 import type { HistoricalWeather } from "@/lib/weather";
-import { ActionButton } from "@/components/ui/ActionButton";
 import { Share2, Copy, RotateCcw, Check } from "lucide-react";
 
 interface SceneShareEndingProps {
@@ -17,174 +16,193 @@ interface SceneShareEndingProps {
 }
 
 export function SceneShareEnding({
-  day,
-  monthName,
-  year,
-  identity,
-  moon,
-  weather,
-  onReset,
+  day, monthName, year, identity, moon, weather, onReset,
 }: SceneShareEndingProps) {
   const [copied, setCopied] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const formattedDate = `${monthName} ${day}, ${year}`;
-  const shareTitle = `BackToYourDay · ${formattedDate}`;
-  const shareText = `I explored the day I was born: ${formattedDate} (${identity.western.name}, ${moon.phaseName}, ${Math.round(weather.maxTempC)}°C). Discover yours:`;
+  const shareText = `${formattedDate} · ${identity.western.name} · ${moon.phaseName} · ${Math.round(weather.maxTempC)}°C`;
   const shareUrl = window.location.href;
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    let animId: number;
+    let t = 0;
+    let w = (canvas.width = window.innerWidth);
+    let h = (canvas.height = window.innerHeight);
+    const resize = () => { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; };
+    window.addEventListener("resize", resize);
+
+    const particles = Array.from({ length: 80 }, () => ({
+      x: Math.random() * w, y: Math.random() * h + h * 0.2,
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: -(Math.random() * 0.6 + 0.1),
+      r: Math.random() * 2 + 0.3,
+      alpha: Math.random() * 0.3 + 0.05,
+      hue: Math.random() > 0.5 ? 40 : 270,
+    }));
+
+    const render = () => {
+      t++;
+      ctx.clearRect(0, 0, w, h);
+
+      // Pulsing center glow
+      const pulse = (Math.sin(t / 50) + 1) * 0.5;
+      const grd = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, Math.min(w, h) * (0.25 + pulse * 0.05));
+      grd.addColorStop(0, "rgba(229,169,60,0.07)"); grd.addColorStop(1, "transparent");
+      ctx.fillStyle = grd; ctx.fillRect(0, 0, w, h);
+
+      for (const p of particles) {
+        p.x += p.vx; p.y += p.vy;
+        if (p.y < -10) { p.y = h + 10; p.x = Math.random() * w; }
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${p.hue},70%,65%,${p.alpha})`; ctx.fill();
+      }
+
+      animId = requestAnimationFrame(render);
+    };
+    render();
+    return () => { window.removeEventListener("resize", resize); cancelAnimationFrame(animId); };
+  }, []);
 
   const handleShare = async () => {
     if (navigator.share) {
       try {
-        await navigator.share({
-          title: shareTitle,
-          text: shareText,
-          url: shareUrl,
-        });
+        await navigator.share({ title: `BackToYourDay · ${formattedDate}`, text: shareText, url: shareUrl });
         return;
-      } catch {
-        // Fallback to copy
-      }
+      } catch { /* fallback */ }
     }
-    handleCopyLink();
+    handleCopy();
   };
 
-  const handleCopyLink = () => {
+  const handleCopy = () => {
     navigator.clipboard.writeText(shareUrl).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     });
   };
 
+  const summary = [
+    { label: identity.western.symbol + " Sun", val: identity.western.name },
+    { label: "🌙 Moon", val: moon.phaseName },
+    { label: "💎 Stone", val: identity.birthstone.primary },
+    { label: "🌸 Flower", val: identity.botanicals.primary.name },
+    { label: "🌡️ Climate", val: `${Math.round(weather.maxTempC)}°C` },
+  ];
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-      className="relative w-full max-w-lg mx-auto flex flex-col items-center justify-center px-2 sm:px-4 py-2 sm:py-4 text-center select-none"
-    >
-      {/* Eyebrow */}
-      <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-mono tracking-widest text-foreground-muted uppercase mb-3 sm:mb-5">
-        <span className="w-1.5 h-1.5 rounded-full bg-accent" />
-        <span>Certified Archive Dossier &bull; Keepsake Record</span>
-      </div>
+    <div className="relative w-full h-full flex items-center justify-center overflow-hidden px-6">
+      <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 pointer-events-none w-full h-full z-0" />
 
-      {/* Keepsake Certificate Panel */}
-      <div className="w-full p-4 sm:p-8 border border-surface-border bg-surface/90 text-left mb-4 sm:mb-6 shadow-2xl relative">
-        {/* Dossier Header */}
-        <div className="flex items-center justify-between border-b border-surface-border pb-2.5 sm:pb-3 mb-4 sm:mb-5">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-accent" />
-            <span className="font-mono text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-white">
-              Personal Archival Dossier
-            </span>
-          </div>
-          <span className="text-[10px] sm:text-[11px] font-mono font-medium text-accent px-1.5 sm:px-2 py-0.5 border border-accent/20 bg-accent/5">
-            {identity.metrics.weekdayBorn.toUpperCase()}
-          </span>
-        </div>
-
-        {/* Date Headline */}
-        <div className="mb-4 sm:mb-6">
-          <span className="font-mono text-[9px] sm:text-[10px] uppercase tracking-widest text-foreground-dim block mb-0.5 sm:mb-1">
-            RECORDED BIRTHDAY
-          </span>
-          <h2 className="font-display text-2xl sm:text-4xl font-bold tracking-tight text-white leading-tight">
+      <div className="relative z-10 w-full max-w-md text-center">
+        {/* Title */}
+        <motion.div
+          initial={{ opacity: 0, y: 30, filter: "blur(12px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <div className="font-mono text-[10px] uppercase tracking-[0.35em] text-white/20 mb-4">
             {formattedDate}
+          </div>
+          <h2
+            className="font-display font-black text-white leading-none mb-6"
+            style={{ fontSize: "clamp(3rem, 12vw, 8rem)" }}
+          >
+            Your
+            <br />
+            <span className="text-accent">Story.</span>
           </h2>
-          <p className="text-[11px] sm:text-xs font-mono text-foreground-muted mt-1 uppercase tracking-wide">
-            Season of {identity.metrics.season} &bull; Year of the {identity.chinese.animal}
-          </p>
-        </div>
+        </motion.div>
 
-        {/* Archival Ledger Rows */}
-        <div className="border-t border-surface-border divide-y divide-surface-border text-xs sm:text-sm mb-4 sm:mb-6">
-          <div className="py-2 sm:py-2.5 flex items-center justify-between">
-            <span className="font-mono text-[11px] sm:text-xs uppercase tracking-wider text-foreground-dim">
-              Sun Sign
-            </span>
-            <span className="font-mono font-medium text-white text-xs sm:text-sm">
-              {identity.western.symbol} {identity.western.name} <span className="text-accent">({identity.western.element})</span>
-            </span>
-          </div>
-
-          <div className="py-2 sm:py-2.5 flex items-center justify-between">
-            <span className="font-mono text-[11px] sm:text-xs uppercase tracking-wider text-foreground-dim">
-              Birthstone
-            </span>
-            <span className="font-sans font-medium text-white text-xs sm:text-sm">
-              {identity.birthstone.primary}
-            </span>
-          </div>
-
-          <div className="py-2 sm:py-2.5 flex items-center justify-between">
-            <span className="font-mono text-[11px] sm:text-xs uppercase tracking-wider text-foreground-dim">
-              Birth Flower
-            </span>
-            <span className="font-sans font-medium text-white text-xs sm:text-sm">
-              {identity.botanicals.primary.name}
-            </span>
-          </div>
-
-          <div className="py-2 sm:py-2.5 flex items-center justify-between">
-            <span className="font-mono text-[11px] sm:text-xs uppercase tracking-wider text-foreground-dim">
-              Lunar Phase
-            </span>
-            <span className="font-sans font-medium text-white text-xs sm:text-sm">
-              {moon.phaseName} <span className="text-accent font-mono text-xs">({moon.illumination}%)</span>
-            </span>
-          </div>
-
-          <div className="py-2 sm:py-2.5 flex items-center justify-between">
-            <span className="font-mono text-[11px] sm:text-xs uppercase tracking-wider text-foreground-dim">
-              Climate
-            </span>
-            <span className="font-sans font-medium text-white text-xs sm:text-sm">
-              {Math.round(weather.maxTempC)}°C &bull; {weather.condition}
-            </span>
-          </div>
-        </div>
+        {/* Summary chips */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35, duration: 0.7 }}
+          className="flex flex-wrap justify-center gap-2 mb-8"
+        >
+          {summary.map(s => (
+            <div
+              key={s.label}
+              className="px-3 py-1.5 flex items-center gap-1.5"
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.07)",
+                backdropFilter: "blur(8px)",
+              }}
+            >
+              <span className="font-mono text-[9px] text-white/25">{s.label}</span>
+              <span className="font-mono text-[10px] text-white/60">{s.val}</span>
+            </div>
+          ))}
+        </motion.div>
 
         {/* Action buttons */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 pt-1">
-          <ActionButton
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.6 }}
+          className="flex flex-col sm:flex-row gap-3 justify-center"
+        >
+          <button
+            type="button"
             onClick={handleShare}
-            className="flex-1 text-xs py-2.5 sm:py-3"
+            className="flex items-center justify-center gap-2 px-6 py-3 cursor-pointer transition-all"
+            style={{
+              background: "rgba(229,169,60,0.12)",
+              border: "1px solid rgba(229,169,60,0.35)",
+              color: "#e5a93c",
+              fontFamily: "monospace",
+              fontSize: "10px",
+              letterSpacing: "0.2em",
+              textTransform: "uppercase",
+              fontWeight: "700",
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(229,169,60,0.22)"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(229,169,60,0.12)"; }}
           >
-            <Share2 className="w-4 h-4" />
-            <span>Share Keepsake</span>
-          </ActionButton>
+            <Share2 className="w-3.5 h-3.5" />
+            Share
+          </button>
 
           <button
             type="button"
-            onClick={handleCopyLink}
-            className="inline-flex items-center justify-center gap-2 py-2.5 sm:py-3 px-4 border border-surface-border bg-surface-subtle hover:bg-surface-raised text-white text-xs font-mono tracking-wider uppercase transition-all cursor-pointer"
-            title="Copy link"
+            onClick={handleCopy}
+            className="flex items-center justify-center gap-2 px-6 py-3 cursor-pointer transition-all"
+            style={{
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              color: copied ? "#e5a93c" : "rgba(255,255,255,0.4)",
+              fontFamily: "monospace",
+              fontSize: "10px",
+              letterSpacing: "0.2em",
+              textTransform: "uppercase",
+              fontWeight: "700",
+            }}
           >
-            {copied ? (
-              <>
-                <Check className="w-4 h-4 text-accent" />
-                <span className="text-accent">Copied</span>
-              </>
-            ) : (
-              <>
-                <Copy className="w-4 h-4 text-foreground-muted" />
-                <span>Copy Link</span>
-              </>
-            )}
+            {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+            {copied ? "Copied!" : "Copy Link"}
           </button>
-        </div>
-      </div>
+        </motion.div>
 
-      {/* Reset CTA */}
-      <button
-        type="button"
-        onClick={onReset}
-        className="inline-flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 text-xs font-mono uppercase tracking-wider text-foreground-muted hover:text-white border border-surface-border bg-surface/30 hover:bg-surface/80 transition-all cursor-pointer"
-      >
-        <RotateCcw className="w-3.5 h-3.5 text-accent" />
-        <span>Explore Another Birthday</span>
-      </button>
-    </motion.div>
+        {/* Reset */}
+        <motion.button
+          type="button"
+          onClick={onReset}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          className="mt-6 flex items-center justify-center gap-2 mx-auto cursor-pointer transition-colors text-white/20 hover:text-white/50"
+          style={{ background: "none", border: "none", fontFamily: "monospace", fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase" }}
+        >
+          <RotateCcw className="w-3 h-3" />
+          Explore Another Day
+        </motion.button>
+      </div>
+    </div>
   );
 }
-

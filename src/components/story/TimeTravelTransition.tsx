@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { sound } from "@/lib/sound";
 
@@ -14,10 +14,10 @@ export function TimeTravelTransition({
   targetDay,
 }: TimeTravelTransitionProps) {
   const currentYear = new Date().getFullYear();
-  const [displayYear, setDisplayYear] = useState(currentYear);
+  const displayYearRef = useRef<HTMLSpanElement>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // Hyperspace warp canvas animation
+  // Chromatic aberration tunnel canvas
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -25,6 +25,7 @@ export function TimeTravelTransition({
     if (!ctx) return;
 
     let animId: number;
+    let t = 0;
     let width = (canvas.width = window.innerWidth);
     let height = (canvas.height = window.innerHeight);
 
@@ -35,133 +36,170 @@ export function TimeTravelTransition({
     };
     window.addEventListener("resize", handleResize);
 
-    // Warp stars radiating from center
     const cx = width / 2;
     const cy = height / 2;
-    const count = 250;
-    const warpStars = Array.from({ length: count }, () => {
+
+    // Warp stars
+    const warpStars = Array.from({ length: 320 }, () => {
       const angle = Math.random() * Math.PI * 2;
-      const dist = Math.random() * (width / 2);
+      const dist = Math.random() * 80 + 5;
       return {
-        x: cx + Math.cos(angle) * dist,
-        y: cy + Math.sin(angle) * dist,
         angle,
-        speed: Math.random() * 8 + 6,
-        length: Math.random() * 40 + 20,
         dist,
-        color: "rgba(255, 255, 255, ",
+        speed: Math.random() * 10 + 7,
+        r: Math.random() * 255 | 0,
+        g: Math.random() * 255 | 0,
+        b: Math.random() * 255 | 0,
       };
     });
 
     const render = () => {
-      ctx.fillStyle = "rgba(9, 10, 12, 0.28)";
+      t++;
+      ctx.fillStyle = "rgba(5, 5, 7, 0.22)";
       ctx.fillRect(0, 0, width, height);
 
-      for (let i = 0; i < count; i++) {
-        const s = warpStars[i];
+      for (const s of warpStars) {
         s.dist += s.speed;
-        s.speed *= 1.025; // accelerate
+        s.speed *= 1.02;
 
-        const prevX = cx + Math.cos(s.angle) * (s.dist - s.length);
-        const prevY = cy + Math.sin(s.angle) * (s.dist - s.length);
+        const prevX = cx + Math.cos(s.angle) * (s.dist - s.speed * 1.5);
+        const prevY = cy + Math.sin(s.angle) * (s.dist - s.speed * 1.5);
         const curX = cx + Math.cos(s.angle) * s.dist;
         const curY = cy + Math.sin(s.angle) * s.dist;
 
-        // Wrap around when off screen
-        if (
-          curX < -50 ||
-          curX > width + 50 ||
-          curY < -50 ||
-          curY > height + 50
-        ) {
-          s.dist = Math.random() * 60 + 10;
-          s.speed = Math.random() * 8 + 6;
+        if (curX < -80 || curX > width + 80 || curY < -80 || curY > height + 80) {
+          s.dist = Math.random() * 30 + 5;
+          s.speed = Math.random() * 10 + 7;
           s.angle = Math.random() * Math.PI * 2;
           continue;
         }
 
-        const alpha = Math.min(1, s.dist / 120);
-        ctx.strokeStyle = `${s.color}${alpha})`;
-        ctx.lineWidth = Math.min(2, s.dist / 150);
+        const alpha = Math.min(1, s.dist / 100);
+        // RGB chromatic split
+        const offset = Math.min(3, s.dist / 80);
+        ctx.strokeStyle = `rgba(255,80,80,${alpha * 0.6})`;
+        ctx.lineWidth = Math.min(2.5, s.dist / 120);
+        ctx.beginPath();
+        ctx.moveTo(prevX - offset, prevY);
+        ctx.lineTo(curX - offset, curY);
+        ctx.stroke();
+
+        ctx.strokeStyle = `rgba(80,180,255,${alpha * 0.6})`;
+        ctx.beginPath();
+        ctx.moveTo(prevX + offset, prevY);
+        ctx.lineTo(curX + offset, curY);
+        ctx.stroke();
+
+        ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
+        ctx.lineWidth = Math.min(1.5, s.dist / 180);
         ctx.beginPath();
         ctx.moveTo(prevX, prevY);
         ctx.lineTo(curX, curY);
         ctx.stroke();
       }
 
+      // Horizontal scanline sweep
+      const scanY = ((t * 3) % (height + 60)) - 30;
+      const scanGrad = ctx.createLinearGradient(0, scanY - 4, 0, scanY + 4);
+      scanGrad.addColorStop(0, "rgba(255,255,255,0)");
+      scanGrad.addColorStop(0.5, "rgba(255,255,255,0.04)");
+      scanGrad.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = scanGrad;
+      ctx.fillRect(0, scanY - 4, width, 8);
+
       animId = requestAnimationFrame(render);
     };
 
     render();
-
     return () => {
       window.removeEventListener("resize", handleResize);
       cancelAnimationFrame(animId);
     };
   }, []);
 
-  // Rapid countdown of years
+  // Rapid year countdown with DOM direct update for speed
   useEffect(() => {
     sound.playWarp();
-    const steps = 22;
+    const steps = 28;
     const diff = currentYear - targetYear;
     let step = 0;
 
     const interval = setInterval(() => {
       step++;
       const progress = step / steps;
-      const eased = Math.pow(progress, 1.4);
+      const eased = Math.pow(progress, 1.6);
       const currentVal = Math.round(currentYear - diff * eased);
-      setDisplayYear(currentVal);
-
+      if (displayYearRef.current) {
+        displayYearRef.current.textContent = String(currentVal);
+      }
       if (step >= steps) {
         clearInterval(interval);
-        setDisplayYear(targetYear);
+        if (displayYearRef.current) {
+          displayYearRef.current.textContent = String(targetYear);
+        }
       }
-    }, 38);
+    }, 32);
 
     return () => clearInterval(interval);
   }, [currentYear, targetYear]);
 
   return (
-    <div className="fixed inset-0 z-50 h-[100dvh] min-h-[100dvh] flex flex-col items-center justify-center bg-canvas text-foreground px-4 select-none overflow-hidden">
-      {/* Hyperspace canvas */}
+    <div className="fixed inset-0 z-50 h-[100dvh] flex items-center justify-center bg-[#050507] overflow-hidden select-none">
+      {/* Chromatic tunnel canvas */}
       <canvas
         ref={canvasRef}
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 z-0 h-full w-full"
       />
 
-      {/* Main Temporal Countdown Container */}
+      {/* Radial vignette */}
+      <div
+        className="absolute inset-0 z-[1] pointer-events-none"
+        style={{ background: "radial-gradient(ellipse at center, transparent 30%, rgba(5,5,7,0.85) 100%)" }}
+      />
+
+      {/* Year — full viewport scale */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
+        initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4 }}
-        className="flex flex-col items-center text-center w-full relative z-10 space-y-3 sm:space-y-4 px-2"
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-10 text-center select-none px-4"
       >
-        <div className="flex items-center gap-2 font-mono text-[11px] sm:text-xs uppercase tracking-[0.2em] text-foreground-muted">
-          <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-          <span>Retrieving Historical Archive</span>
+        <div className="font-mono text-[11px] uppercase tracking-[0.3em] text-white/30 mb-6">
+          TRAVERSING TIME
         </div>
 
-        <div className="font-display text-6xl sm:text-8xl md:text-[11rem] font-extrabold tracking-tighter tabular-nums leading-none text-white">
-          {displayYear}
+        {/* Massive year counter */}
+        <div
+          className="font-display font-black tracking-tighter leading-none tabular-nums select-none animate-rgb-split"
+          style={{
+            fontSize: "clamp(6rem, 25vw, 22rem)",
+            color: "#ffffff",
+            lineHeight: 0.85,
+          }}
+        >
+          <span ref={displayYearRef}>{currentYear}</span>
         </div>
 
-        <p className="text-foreground-muted text-xs sm:text-base font-mono px-2">
-          Target Date: <span className="text-white font-semibold">{targetMonthName} {targetDay}, {targetYear}</span>
-        </p>
-      </motion.div>
-
-      {/* Amber hairline progress bar at screen bottom */}
-      <div className="absolute bottom-0 left-0 w-full h-[2px] bg-surface-border overflow-hidden">
         <motion.div
-          initial={{ width: "0%" }}
-          animate={{ width: "100%" }}
-          transition={{ duration: 0.95, ease: "easeInOut" }}
-          className="h-full bg-accent"
-        />
-      </div>
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className="mt-8 text-white/40 font-mono text-sm tracking-widest uppercase"
+        >
+          {targetMonthName} {targetDay}, {targetYear}
+        </motion.div>
+
+        {/* Thin amber progress line */}
+        <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 w-48 h-[1px] bg-white/10 overflow-hidden">
+          <motion.div
+            initial={{ width: "0%" }}
+            animate={{ width: "100%" }}
+            transition={{ duration: 0.95, ease: "easeInOut" }}
+            className="h-full bg-accent"
+          />
+        </div>
+      </motion.div>
     </div>
   );
 }

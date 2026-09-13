@@ -1,7 +1,6 @@
+import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { TiltPlate } from "@/components/ui/TiltPlate";
 import type { SongItem } from "@/lib/culture";
-import { Disc3 } from "lucide-react";
 
 interface SceneMusicProps {
   songs: SongItem[];
@@ -9,115 +8,170 @@ interface SceneMusicProps {
 }
 
 export function SceneMusic({ songs, year }: SceneMusicProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   if (!songs || songs.length === 0) return null;
-
   const topSong = songs[0];
-  const runnerUps = songs.slice(1, 3);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    let animId: number;
+    let t = 0;
+    let w = (canvas.width = window.innerWidth);
+    let h = (canvas.height = window.innerHeight);
+    const resize = () => { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; };
+    window.addEventListener("resize", resize);
+
+    // Simulated waveform bars
+    const numBars = Math.floor(w / 6);
+    const bars = Array.from({ length: numBars }, (_, i) => ({
+      phase: (i / numBars) * Math.PI * 8 + Math.random() * Math.PI * 2,
+      speed: 0.04 + Math.random() * 0.06,
+      amp: 0.4 + Math.random() * 0.6,
+    }));
+
+    const render = () => {
+      t++;
+      ctx.clearRect(0, 0, w, h);
+
+      const barW = w / numBars;
+      const centerY = h * 0.6;
+      const maxH = h * 0.38;
+
+      for (let i = 0; i < numBars; i++) {
+        const b = bars[i];
+        b.phase += b.speed;
+        const height = Math.abs(Math.sin(b.phase) * b.amp) * maxH + 2;
+        const x = i * barW;
+        const frac = i / numBars;
+
+        // Gradient bar color
+        const hue = 30 + frac * 30; // amber range
+        const alpha = 0.15 + Math.abs(Math.sin(b.phase)) * 0.25;
+        ctx.fillStyle = `hsla(${hue},80%,65%,${alpha})`;
+        ctx.fillRect(x, centerY - height, barW - 1, height * 2);
+      }
+
+      animId = requestAnimationFrame(render);
+    };
+    render();
+    return () => { window.removeEventListener("resize", resize); cancelAnimationFrame(animId); };
+  }, []);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-      className="w-full max-w-4xl mx-auto select-none px-2 sm:px-4"
-    >
-      {/* Editorial Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between border-b border-surface-border pb-2.5 sm:pb-4 mb-4 sm:mb-8 text-left">
-        <div>
-          <span className="font-mono text-[11px] sm:text-xs uppercase tracking-widest text-accent font-semibold block mb-0.5 sm:mb-1">
-            BROADCAST ARCHIVE
-          </span>
-          <h2 className="font-display text-2xl sm:text-5xl font-bold tracking-tight text-white">
-            Airwaves of {year}
-          </h2>
+    <div className="relative w-full h-full overflow-hidden flex items-center justify-center">
+      {/* Album art blurred background */}
+      {topSong.albumArt && (
+        <div
+          className="absolute inset-0 z-0"
+          style={{
+            backgroundImage: `url(${topSong.albumArt})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            filter: "blur(40px) brightness(0.2) saturate(0.5)",
+            transform: "scale(1.2)",
+          }}
+        />
+      )}
+
+      {/* Waveform canvas */}
+      <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 pointer-events-none w-full h-full z-[1]" />
+
+      {/* Top label */}
+      <div className="absolute top-8 sm:top-12 left-8 sm:left-14 z-20">
+        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/25">
+          Airwaves · {year}
         </div>
-        <p className="text-foreground-muted text-[11px] sm:text-xs font-mono mt-1 sm:mt-0 uppercase tracking-wide">
-          Leading Radio Broadcasts of Your Birth Year
-        </p>
       </div>
 
-      {/* Asymmetric Chart Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-8 items-start text-left">
-        {/* Primary Feature: #1 Radio Anthem with 3D Tilt */}
-        <div className="md:col-span-7">
-          <TiltPlate>
-            <div className="flex flex-row gap-3.5 sm:gap-6 p-3 sm:p-5 border border-surface-border bg-surface/70">
-              <div className="w-24 h-24 sm:w-44 sm:h-44 md:w-48 md:h-48 shrink-0 aspect-square overflow-hidden border border-surface-border bg-surface relative">
-                <img
-                  src={topSong.albumArt}
-                  alt={`${topSong.title} by ${topSong.artist}`}
-                  loading="lazy"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-black/90 border border-surface-border text-[9px] sm:text-[10px] font-mono text-accent font-semibold">
-                  #01 BROADCAST
-                </div>
-                <div className="absolute bottom-1.5 left-1.5 flex items-center gap-1 px-1.5 py-0.5 bg-black/80 border border-surface-border text-[8px] sm:text-[10px] font-mono text-foreground-muted">
-                  <Disc3 className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-accent" />
-                  <span>33⅓ RPM</span>
-                </div>
-              </div>
+      {/* #1 badge */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.1, duration: 0.6, type: "spring" }}
+        className="absolute top-8 sm:top-12 right-8 sm:right-14 z-20"
+      >
+        <div
+          className="font-mono text-[10px] uppercase tracking-widest text-accent px-2 py-1"
+          style={{ border: "1px solid rgba(229,169,60,0.3)", background: "rgba(229,169,60,0.05)" }}
+        >
+          #1
+        </div>
+      </motion.div>
 
-              <div className="flex flex-col justify-between py-0.5 min-w-0 flex-1">
-                <div className="space-y-1 sm:space-y-2">
-                  <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-widest text-foreground-dim block">
-                    NUMBER-ONE RECORD
-                  </span>
-                  <h3 className="font-display text-lg sm:text-2xl md:text-3xl font-bold text-white leading-tight truncate">
-                    {topSong.title}
-                  </h3>
-                  <p className="text-xs sm:text-sm font-sans text-accent font-medium truncate">
-                    {topSong.artist}
-                  </p>
-                  <p className="text-xs font-sans text-foreground-muted leading-relaxed line-clamp-3 sm:line-clamp-4 pt-0.5">
-                    The defining musical hit playing across commercial radio frequencies and domestic stereos during your arrival.
-                  </p>
-                </div>
-                <div className="pt-2 sm:pt-4 mt-2 sm:mt-4 border-t border-surface-border text-[10px] sm:text-[11px] font-mono text-foreground-dim">
-                  Format: <span className="text-white font-medium">Master Vinyl Single</span>
-                </div>
-              </div>
-            </div>
-          </TiltPlate>
+      {/* Main centered content */}
+      <div className="relative z-20 text-center px-8 w-full max-w-3xl">
+        {/* Album art */}
+        <motion.div
+          initial={{ opacity: 0, y: 30, scale: 0.8 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="mx-auto mb-6 sm:mb-8 animate-float-y"
+          style={{
+            width: "clamp(100px, 18vw, 200px)",
+            aspectRatio: "1",
+            boxShadow: "0 30px 80px rgba(0,0,0,0.7), 0 0 60px rgba(229,169,60,0.1)",
+          }}
+        >
+          <img
+            src={topSong.albumArt}
+            alt={topSong.title}
+            className="w-full h-full object-cover"
+          />
+        </motion.div>
+
+        {/* Marquee title */}
+        <div className="overflow-hidden w-full">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+            className="font-display font-black text-white whitespace-nowrap"
+            style={{ fontSize: "clamp(2rem, 8vw, 7rem)" }}
+          >
+            <span className="inline-block animate-marquee">
+              {topSong.title}&nbsp;&nbsp;&nbsp;·&nbsp;&nbsp;&nbsp;{topSong.title}&nbsp;&nbsp;&nbsp;·&nbsp;&nbsp;&nbsp;
+            </span>
+          </motion.div>
         </div>
 
-        {/* Secondary Records: #2 and #3 Chart Hits */}
-        <div className="md:col-span-5 space-y-2.5 sm:space-y-4">
-          <div className="text-[10px] font-mono uppercase tracking-widest text-foreground-dim pb-1 border-b border-surface-border">
-            TOP CHART RUNNERS-UP
+        {/* Artist */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35, duration: 0.6 }}
+          className="font-mono text-white/40 uppercase tracking-widest mt-3"
+          style={{ fontSize: "clamp(0.7rem, 2vw, 1.1rem)" }}
+        >
+          {topSong.artist}
+        </motion.div>
+      </div>
+
+      {/* Runner-ups — bottom */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6, duration: 0.6 }}
+        className="absolute bottom-6 sm:bottom-10 left-8 sm:left-14 right-8 sm:right-14 z-20 flex gap-3 justify-center"
+      >
+        {songs.slice(1, 4).map((s) => (
+          <div
+            key={s.title}
+            className="flex items-center gap-2 px-3 py-1.5"
+            style={{
+              background: "rgba(0,0,0,0.4)",
+              border: "1px solid rgba(255,255,255,0.06)",
+              backdropFilter: "blur(8px)",
+              maxWidth: "160px",
+            }}
+          >
+            <img src={s.albumArt} alt={s.title} className="w-6 h-6 object-cover shrink-0" />
+            <span className="font-mono text-[9px] text-white/40 truncate">{s.title}</span>
           </div>
-
-          {runnerUps.map((song, idx) => (
-            <div
-              key={song.title}
-              className="flex gap-3 sm:gap-4 p-2.5 sm:p-3.5 border border-surface-border bg-surface/40 hover:bg-surface/70 transition-colors"
-            >
-              <div className="w-12 h-12 sm:w-16 sm:h-16 shrink-0 aspect-square overflow-hidden border border-surface-border bg-surface relative">
-                <img
-                  src={song.albumArt}
-                  alt={`${song.title} by ${song.artist}`}
-                  loading="lazy"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-
-              <div className="flex flex-col justify-center space-y-0.5 sm:space-y-1 min-w-0 flex-1">
-                <div className="text-[9px] sm:text-[10px] font-mono font-semibold text-accent">
-                  NO. 0{idx + 2} ON AIRWAVES
-                </div>
-                <h4 className="font-display font-bold text-xs sm:text-base text-white truncate">
-                  {song.title}
-                </h4>
-                <p className="text-[11px] sm:text-xs text-foreground-dim font-mono truncate">
-                  {song.artist}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </motion.div>
+        ))}
+      </motion.div>
+    </div>
   );
 }
-
-

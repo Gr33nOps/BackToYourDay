@@ -8,7 +8,8 @@ interface Star {
   alpha: number;
   twinkleSpeed: number;
   twinklePhase: number;
-  layer: number; // 1, 2, or 3 for depth parallax
+  layer: number;
+  r: number; g: number; b: number;
 }
 
 interface ShootingStar {
@@ -20,6 +21,18 @@ interface ShootingStar {
   alpha: number;
   active: boolean;
 }
+
+// Star color palette — mostly white/warm, with occasional teal & violet
+const STAR_COLORS: [number, number, number][] = [
+  [255, 255, 255],
+  [255, 255, 255],
+  [255, 255, 255],
+  [255, 248, 225],
+  [255, 230, 160],
+  [229, 169, 60],
+  [110, 215, 245],
+  [185, 145, 255],
+];
 
 export function StarfieldBackground({
   starCount = 180,
@@ -51,7 +64,6 @@ export function StarfieldBackground({
     };
 
     const handleMouseMove = (e: MouseEvent) => {
-      // Gentle parallax target normalized to [-1, 1]
       mouseRef.current.targetX = (e.clientX / width - 0.5) * 2;
       mouseRef.current.targetY = (e.clientY / height - 0.5) * 2;
     };
@@ -69,16 +81,14 @@ export function StarfieldBackground({
         const layer = Math.random() < 0.6 ? 1 : Math.random() < 0.85 ? 2 : 3;
         const size = layer === 1 ? Math.random() * 1.0 + 0.4 : layer === 2 ? Math.random() * 1.5 + 0.8 : Math.random() * 2.2 + 1.2;
         const baseAlpha = layer === 1 ? Math.random() * 0.4 + 0.2 : layer === 2 ? Math.random() * 0.5 + 0.35 : Math.random() * 0.4 + 0.5;
-
+        const [r, g, b] = STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)]!;
         stars.push({
           x: Math.random() * width,
           y: Math.random() * height,
-          size,
-          baseAlpha,
-          alpha: baseAlpha,
+          size, baseAlpha, alpha: baseAlpha,
           twinkleSpeed: Math.random() * 0.025 + 0.008,
           twinklePhase: Math.random() * Math.PI * 2,
-          layer,
+          layer, r, g, b,
         });
       }
     };
@@ -88,20 +98,10 @@ export function StarfieldBackground({
       const x = startFromTop ? Math.random() * width * 0.8 + width * 0.1 : width + 20;
       const y = startFromTop ? -20 : Math.random() * height * 0.4;
       const angle = (Math.PI / 4) + (Math.random() * 0.2 - 0.1);
-
-      shootingStars.push({
-        x,
-        y,
-        length: Math.random() * 100 + 70,
-        speed: Math.random() * 12 + 10,
-        angle,
-        alpha: 1,
-        active: true,
-      });
+      shootingStars.push({ x, y, length: Math.random() * 110 + 70, speed: Math.random() * 14 + 10, angle, alpha: 1, active: true });
     };
 
     initStars();
-
     let lastTime = performance.now();
 
     const render = (time: number) => {
@@ -113,36 +113,38 @@ export function StarfieldBackground({
 
       ctx.clearRect(0, 0, width, height);
 
-      // Render stars
       for (let i = 0; i < stars.length; i++) {
         const star = stars[i];
         star.twinklePhase += star.twinkleSpeed;
         star.alpha = star.baseAlpha + Math.sin(star.twinklePhase) * 0.25;
-        const clampedAlpha = Math.max(0.1, Math.min(1, star.alpha));
+        const a = Math.max(0.05, Math.min(1, star.alpha));
 
-        const parallaxOffset = star.layer * 12;
+        const parallaxOffset = star.layer * 14;
         const drawX = star.x + mouseRef.current.x * parallaxOffset;
         const drawY = star.y + mouseRef.current.y * parallaxOffset;
 
-        ctx.fillStyle = `rgba(255, 255, 255, ${clampedAlpha})`;
+        ctx.fillStyle = `rgba(${star.r}, ${star.g}, ${star.b}, ${a})`;
         ctx.beginPath();
         ctx.arc(drawX, drawY, star.size, 0, Math.PI * 2);
         ctx.fill();
 
-        if (star.layer === 3) {
-          ctx.fillStyle = `rgba(229, 169, 60, ${clampedAlpha * 0.18})`;
+        // Glow halo for brighter stars
+        if (star.layer === 3 || (star.layer === 2 && star.size > 1.8)) {
+          const grd = ctx.createRadialGradient(drawX, drawY, 0, drawX, drawY, star.size * 3.5);
+          grd.addColorStop(0, `rgba(${star.r}, ${star.g}, ${star.b}, ${a * 0.3})`);
+          grd.addColorStop(1, "transparent");
+          ctx.fillStyle = grd;
           ctx.beginPath();
-          ctx.arc(drawX, drawY, star.size * 2, 0, Math.PI * 2);
+          ctx.arc(drawX, drawY, star.size * 3.5, 0, Math.PI * 2);
           ctx.fill();
         }
       }
 
-      // Render shooting stars
       if (enableShootingStars) {
         const now = Date.now();
         if (now > nextShootingStarTime) {
           spawnShootingStar();
-          nextShootingStarTime = now + Math.random() * 4000 + 2500;
+          nextShootingStarTime = now + Math.random() * 4500 + 2500;
         }
 
         for (let i = shootingStars.length - 1; i >= 0; i--) {
@@ -164,11 +166,11 @@ export function StarfieldBackground({
 
           const gradient = ctx.createLinearGradient(tailX, tailY, s.x, s.y);
           gradient.addColorStop(0, "rgba(255, 255, 255, 0)");
-          gradient.addColorStop(0.7, `rgba(229, 169, 60, ${s.alpha * 0.35})`);
+          gradient.addColorStop(0.65, `rgba(229, 190, 80, ${s.alpha * 0.4})`);
           gradient.addColorStop(1, `rgba(255, 255, 255, ${s.alpha})`);
 
           ctx.strokeStyle = gradient;
-          ctx.lineWidth = 1.6;
+          ctx.lineWidth = 1.8;
           ctx.beginPath();
           ctx.moveTo(tailX, tailY);
           ctx.lineTo(s.x, s.y);
@@ -176,7 +178,7 @@ export function StarfieldBackground({
 
           ctx.fillStyle = `rgba(255, 255, 255, ${s.alpha})`;
           ctx.beginPath();
-          ctx.arc(s.x, s.y, 1.8, 0, Math.PI * 2);
+          ctx.arc(s.x, s.y, 2, 0, Math.PI * 2);
           ctx.fill();
         }
       }

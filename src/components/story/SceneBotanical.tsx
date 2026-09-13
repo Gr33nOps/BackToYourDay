@@ -1,6 +1,6 @@
+import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { BotanicalVisual } from "@/components/visuals/BotanicalVisual";
-import { TiltPlate } from "@/components/ui/TiltPlate";
 import type { BirthBotanicals } from "@/lib/almanac";
 
 interface SceneBotanicalProps {
@@ -8,91 +8,119 @@ interface SceneBotanicalProps {
 }
 
 export function SceneBotanical({ botanicals }: SceneBotanicalProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const flower = botanicals.primary;
 
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    let animId: number;
+    let t = 0;
+    let w = (canvas.width = window.innerWidth);
+    let h = (canvas.height = window.innerHeight);
+    const resize = () => { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; };
+    window.addEventListener("resize", resize);
+
+    // Drifting petal-like particles
+    const petals = Array.from({ length: 60 }, () => ({
+      x: Math.random() * w,
+      y: Math.random() * h + h,
+      vx: (Math.random() - 0.5) * 0.8,
+      vy: -(Math.random() * 1.2 + 0.4),
+      r: Math.random() * 6 + 2,
+      rot: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 0.04,
+      alpha: Math.random() * 0.4 + 0.1,
+    }));
+
+    const render = () => {
+      t++;
+      ctx.clearRect(0, 0, w, h);
+
+      // Soft green radial glow
+      const grd = ctx.createRadialGradient(w / 2, h * 0.6, 0, w / 2, h * 0.6, Math.min(w, h) * 0.6);
+      grd.addColorStop(0, "rgba(100,180,100,0.06)");
+      grd.addColorStop(1, "transparent");
+      ctx.fillStyle = grd;
+      ctx.fillRect(0, 0, w, h);
+
+      // Petals
+      for (const p of petals) {
+        p.x += p.vx + Math.sin(t / 40 + p.y / 100) * 0.4;
+        p.y += p.vy;
+        p.rot += p.rotSpeed;
+        if (p.y < -20) {
+          p.y = h + 20;
+          p.x = Math.random() * w;
+        }
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = `rgba(180,220,160,${p.alpha})`;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, p.r * 0.5, p.r, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      animId = requestAnimationFrame(render);
+    };
+    render();
+    return () => { window.removeEventListener("resize", resize); cancelAnimationFrame(animId); };
+  }, []);
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-      className="w-full max-w-4xl mx-auto select-none px-2 sm:px-4"
-    >
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-5 sm:gap-8 md:gap-12 items-center">
-        {/* Left Column: Specimen Herbarium Plate with 3D Tilt */}
-        <div className="md:col-span-5">
-          <TiltPlate>
-            <div className="flex flex-col items-center justify-center p-4 sm:p-8 border border-surface-border bg-surface/60 relative">
-              <div className="w-full flex items-center justify-between text-[10px] font-mono uppercase tracking-widest text-foreground-dim border-b border-surface-border pb-2 mb-4 sm:mb-6">
-                <span>PLATE III &bull; FLORIOGRAPHY</span>
-                <span>HERBARIUM</span>
-              </div>
+    <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+      <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 pointer-events-none w-full h-full z-0" />
 
-              <div className="relative my-2 sm:my-4 flex items-center justify-center">
-                <motion.div
-                  animate={{ y: [0, -6, 0] }}
-                  transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
-                  className="relative z-10"
-                >
-                  <div className="sm:hidden">
-                    <BotanicalVisual name={flower.name} size={130} />
-                  </div>
-                  <div className="hidden sm:block">
-                    <BotanicalVisual name={flower.name} size={180} />
-                  </div>
-                </motion.div>
-              </div>
+      {/* Bottom gradient */}
+      <div className="absolute bottom-0 left-0 right-0 h-1/3 z-[1] pointer-events-none"
+        style={{ background: "linear-gradient(to top, rgba(5,5,7,0.6), transparent)" }} />
 
-              <div className="w-full text-center pt-3 sm:pt-4 border-t border-surface-border text-[10px] sm:text-[11px] font-mono text-foreground-muted">
-                Botanical Plate &bull; <span className="text-white font-medium">{flower.name}</span>
-              </div>
-            </div>
-          </TiltPlate>
+      {/* Flower name — top */}
+      <motion.div
+        initial={{ opacity: 0, y: -24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="absolute top-8 sm:top-12 left-0 right-0 text-center z-20"
+      >
+        <div className="font-mono text-[10px] uppercase tracking-[0.35em] text-white/20 mb-2">Birth Flower</div>
+        <div
+          className="font-display font-black text-white leading-none"
+          style={{ fontSize: "clamp(2.5rem, 9vw, 8rem)" }}
+        >
+          {flower.name}
         </div>
+      </motion.div>
 
-        {/* Right Column: Editorial Dossier */}
-        <div className="md:col-span-7 text-left space-y-3.5 sm:space-y-5">
-          <div className="space-y-1">
-            <span className="font-mono text-[11px] sm:text-xs uppercase tracking-widest text-accent font-semibold block">
-              BOTANICAL EMBLEM
-            </span>
-            <h2 className="font-display text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-tight">
-              {flower.name}
-            </h2>
-            <p className="text-foreground-muted text-xs font-mono">
-              Symbolic Meaning: <span className="text-accent">{flower.meaning}</span>
-            </p>
+      {/* Botanical visual — center */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.5, y: 40 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-10 animate-float-y"
+        style={{ filter: "drop-shadow(0 20px 60px rgba(100,200,100,0.25))" }}
+      >
+        <div className="sm:hidden"><BotanicalVisual name={flower.name} size={180} /></div>
+        <div className="hidden sm:block"><BotanicalVisual name={flower.name} size={300} /></div>
+      </motion.div>
+
+      {/* Meaning — bottom */}
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5, duration: 0.7 }}
+        className="absolute bottom-8 sm:bottom-12 left-0 right-0 text-center z-20"
+      >
+        <div className="font-mono text-xs text-white/30 italic">{flower.meaning}</div>
+        {botanicals.secondary && (
+          <div className="font-mono text-[10px] text-white/15 mt-1 uppercase tracking-widest">
+            Also: {botanicals.secondary.name}
           </div>
-
-          {/* Technical Ledger Strip */}
-          <div className="grid grid-cols-2 border-t border-b border-surface-border py-2 sm:py-3 text-[11px] sm:text-xs font-mono divide-x divide-surface-border">
-            <div className="pr-3">
-              <span className="text-[9px] sm:text-[10px] text-foreground-dim block uppercase">Tradition</span>
-              <span className="text-white font-semibold text-xs sm:text-sm">Language of Flowers</span>
-            </div>
-            <div className="pl-3">
-              <span className="text-[9px] sm:text-[10px] text-foreground-dim block uppercase">Attribute</span>
-              <span className="text-white font-semibold text-xs sm:text-sm">{flower.meaning}</span>
-            </div>
-          </div>
-
-          {/* Narrative Lore */}
-          <p className="text-foreground-muted text-xs sm:text-base leading-relaxed font-sans">
-            In classical floriography, the {flower.name} has long represented enduring {flower.meaning.toLowerCase()}, bringing grace and distinction to those born in this season.
-          </p>
-
-          {botanicals.secondary && (
-            <div className="pt-1 sm:pt-2">
-              <span className="text-[10px] sm:text-xs font-mono text-foreground-dim uppercase tracking-wider block mb-0.5">
-                Companion Bloom
-              </span>
-              <p className="text-xs sm:text-sm font-sans text-white">
-                Paired with <span className="font-medium text-accent">{botanicals.secondary.name}</span>.
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-    </motion.div>
+        )}
+      </motion.div>
+    </div>
   );
 }
-

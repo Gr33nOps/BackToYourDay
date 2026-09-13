@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import type { BirthdayIdentity } from "@/lib/almanac";
 import { NumberTicker } from "@/components/ui/number-ticker";
@@ -8,107 +9,127 @@ interface SceneDaysLivedProps {
 }
 
 export function SceneDaysLived({ daysLived, identity }: SceneDaysLivedProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const breathsTakenM = Math.round((daysLived * 20000) / 1_000_000);
-  const galacticKmBillion = Math.round((daysLived * 2.3) / 100) / 10;
+  const solarOrbits = identity?.metrics.earthOrbits ?? Math.floor(daysLived / 365.25);
   const approximateHeartbeatsM = identity
     ? Math.round(identity.metrics.approximateHeartbeats / 1_000_000)
     : Math.round((daysLived * 100000) / 1_000_000);
-  const solarOrbits = identity
-    ? identity.metrics.earthOrbits
-    : Math.floor(daysLived / 365.25);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    let animId: number;
+    let t = 0;
+    let w = (canvas.width = window.innerWidth);
+    let h = (canvas.height = window.innerHeight);
+    const resize = () => { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; };
+    window.addEventListener("resize", resize);
+
+    // Each particle = a day
+    const count = Math.min(daysLived, 3000);
+    type P = { x: number; y: number; vx: number; vy: number; r: number; alpha: number; hue: number };
+    const particles: P[] = Array.from({ length: count }, () => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      r: Math.random() * 1.8 + 0.3,
+      alpha: Math.random() * 0.4 + 0.05,
+      hue: Math.random() > 0.7 ? 40 : 195,
+    }));
+
+    const render = () => {
+      t++;
+      ctx.clearRect(0, 0, w, h);
+
+      // Pulsing center glow
+      const pulseR = (Math.sin(t / 40) + 1) * 0.5;
+      const grd = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, Math.min(w, h) * (0.2 + pulseR * 0.1));
+      grd.addColorStop(0, "rgba(229,169,60,0.08)"); grd.addColorStop(1, "transparent");
+      ctx.fillStyle = grd; ctx.fillRect(0, 0, w, h);
+
+      for (const p of particles) {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0) p.x = w; if (p.x > w) p.x = 0;
+        if (p.y < 0) p.y = h; if (p.y > h) p.y = 0;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${p.hue},70%,65%,${p.alpha})`; ctx.fill();
+      }
+
+      animId = requestAnimationFrame(render);
+    };
+    render();
+    return () => { window.removeEventListener("resize", resize); cancelAnimationFrame(animId); };
+  }, [daysLived]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-      className="w-full max-w-4xl mx-auto select-none px-2 sm:px-4 text-left"
-    >
-      {/* Header & Colossal Headline */}
-      <div className="border-b border-surface-border pb-4 sm:pb-8 mb-4 sm:mb-8 space-y-2 sm:space-y-3">
-        <span className="font-mono text-[11px] sm:text-xs uppercase tracking-widest text-accent font-semibold block">
-          TEMPORAL PASSAGE
-        </span>
+    <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+      <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 pointer-events-none w-full h-full z-0" />
 
-        <div>
-          <h2 className="font-display text-2xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
-            Days on Earth
-          </h2>
-          <div className="font-display text-5xl xs:text-6xl sm:text-8xl md:text-[9rem] font-bold tracking-tighter text-white tabular-nums leading-none my-2 sm:my-3">
-            <NumberTicker value={daysLived} delay={0.15} />
-          </div>
-          <p className="text-foreground-muted text-xs sm:text-base font-sans max-w-xl leading-relaxed">
-            You have lived through <strong className="text-white font-medium">{solarOrbits}</strong> complete revolutions around the Sun, drawing roughly <strong className="text-white font-medium">{breathsTakenM} million</strong> breaths while journeying <strong className="text-white font-medium">{galacticKmBillion} billion</strong> kilometers through interstellar space.
-          </p>
+      {/* Label — top */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1, duration: 0.7 }}
+        className="absolute top-8 sm:top-12 left-0 right-0 text-center z-20"
+      >
+        <div className="font-mono text-[10px] uppercase tracking-[0.35em] text-white/20">Life in Numbers</div>
+      </motion.div>
+
+      {/* Massive number */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.7 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-10 text-center"
+      >
+        <div
+          className="font-display font-black text-white leading-none tabular-nums"
+          style={{ fontSize: "clamp(4rem, 22vw, 18rem)", textShadow: "0 0 120px rgba(229,169,60,0.15)" }}
+        >
+          <NumberTicker value={daysLived} delay={0.1} />
         </div>
-      </div>
-
-      {/* Single Horizontal Milestone Ledger */}
-      <div className="grid grid-cols-2 md:grid-cols-4 border border-surface-border bg-surface/80 divide-y md:divide-y-0 md:divide-x divide-surface-border">
-        {/* Heartbeats */}
-        <div className="p-3 sm:p-5 border-r md:border-r-0 border-surface-border">
-          <div className="text-[9px] sm:text-[10px] font-mono tracking-wider text-foreground-dim uppercase mb-1">
-            Cardiac Pulses
-          </div>
-          <div className="font-display text-lg sm:text-3xl font-bold text-white tabular-nums">
-            ~<NumberTicker value={approximateHeartbeatsM} delay={0.2} /><span className="text-accent ml-0.5 text-sm sm:text-base font-mono">M</span>
-          </div>
-          <span className="text-[10px] sm:text-[11px] font-mono text-foreground-muted mt-0.5 block">
-            estimated heartbeats
-          </span>
+        <div className="font-mono text-[11px] sm:text-sm uppercase tracking-[0.35em] text-white/25 mt-3">
+          days on earth
         </div>
+      </motion.div>
 
-        {/* Solar Orbits */}
-        <div className="p-3 sm:p-5">
-          <div className="text-[9px] sm:text-[10px] font-mono tracking-wider text-foreground-dim uppercase mb-1">
-            Solar Returns
+      {/* Stats — bottom */}
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6, duration: 0.7 }}
+        className="absolute bottom-8 sm:bottom-12 left-0 right-0 z-20 flex justify-center gap-6 sm:gap-12 px-8"
+      >
+        {[
+          { val: `${solarOrbits}×`, label: "solar orbits" },
+          { val: `~${breathsTakenM}M`, label: "breaths drawn" },
+          { val: `~${approximateHeartbeatsM}M`, label: "heartbeats" },
+        ].map(s => (
+          <div key={s.label} className="text-center">
+            <div className="font-display font-bold text-accent" style={{ fontSize: "clamp(1rem, 3vw, 2rem)" }}>
+              {s.val}
+            </div>
+            <div className="font-mono text-[9px] uppercase tracking-widest text-white/20 mt-0.5">{s.label}</div>
           </div>
-          <div className="font-display text-lg sm:text-3xl font-bold text-white tabular-nums">
-            <NumberTicker value={solarOrbits} delay={0.2} /><span className="text-accent ml-0.5 text-sm sm:text-base font-mono">×</span>
-          </div>
-          <span className="text-[10px] sm:text-[11px] font-mono text-foreground-muted mt-0.5 block">
-            orbital cycles
-          </span>
-        </div>
+        ))}
+      </motion.div>
 
-        {/* Respiration */}
-        <div className="p-3 sm:p-5 border-r md:border-r-0 border-surface-border">
-          <div className="text-[9px] sm:text-[10px] font-mono tracking-wider text-foreground-dim uppercase mb-1">
-            Respiration
-          </div>
-          <div className="font-display text-lg sm:text-3xl font-bold text-white tabular-nums">
-            ~<NumberTicker value={breathsTakenM} delay={0.2} /><span className="text-accent ml-0.5 text-sm sm:text-base font-mono">M</span>
-          </div>
-          <span className="text-[10px] sm:text-[11px] font-mono text-foreground-muted mt-0.5 block">
-            breaths drawn
-          </span>
-        </div>
-
-        {/* Galactic Transit */}
-        <div className="p-3 sm:p-5">
-          <div className="text-[9px] sm:text-[10px] font-mono tracking-wider text-foreground-dim uppercase mb-1">
-            Galactic Voyage
-          </div>
-          <div className="font-display text-lg sm:text-3xl font-bold text-white tabular-nums">
-            {galacticKmBillion}<span className="text-accent ml-0.5 text-sm sm:text-base font-mono">B</span>
-          </div>
-          <span className="text-[10px] sm:text-[11px] font-mono text-foreground-muted mt-0.5 block">
-            km through cosmos
-          </span>
-        </div>
-      </div>
-
-      {/* Subdued Footer Note */}
       {identity && (
-        <div className="mt-4 sm:mt-6 flex items-center gap-2 text-[11px] sm:text-xs font-mono text-foreground-dim">
-          <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0" />
-          <span>
-            Next solar return occurs in <strong className="text-white font-medium">{identity.metrics.daysUntilNextBirthday}</strong> calendar days.
-          </span>
-        </div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.9 }}
+          className="absolute bottom-8 right-8 sm:right-14 z-20 text-right"
+        >
+          <div className="font-mono text-[9px] uppercase tracking-widest text-white/15">
+            Next birthday in {identity.metrics.daysUntilNextBirthday} days
+          </div>
+        </motion.div>
       )}
-    </motion.div>
+    </div>
   );
 }
-
-

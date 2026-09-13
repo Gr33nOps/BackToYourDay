@@ -1,105 +1,146 @@
+import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { GemstoneVisual } from "@/components/visuals/GemstoneVisual";
-import { TiltPlate } from "@/components/ui/TiltPlate";
 import { BirthstoneInfo } from "@/lib/almanac";
+
+// Map stone names to rich backdrop colors
+const STONE_COLORS: Record<string, string> = {
+  Garnet: "#8b1a2c",
+  Amethyst: "#6b4fa0",
+  Aquamarine: "#1a7a8a",
+  Diamond: "#b0c4de",
+  Emerald: "#1a6b3a",
+  Pearl: "#d4c8a8",
+  Ruby: "#9b1a2a",
+  Peridot: "#4a7a2a",
+  Sapphire: "#1a3a8b",
+  Opal: "#6a4a8b",
+  Topaz: "#c87a1a",
+  Turquoise: "#1a7a6b",
+  "Blue Topaz": "#1a5a8b",
+  Tanzanite: "#4a2a8b",
+};
 
 interface SceneGemstoneProps {
   birthstone: BirthstoneInfo;
 }
 
 export function SceneGemstone({ birthstone }: SceneGemstoneProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const gemColor = STONE_COLORS[birthstone.primary] ?? "#e5a93c";
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    let animId: number;
+    let t = 0;
+    let w = (canvas.width = window.innerWidth);
+    let h = (canvas.height = window.innerHeight);
+    const resize = () => { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; };
+    window.addEventListener("resize", resize);
+
+    // Rotating facet lines radiating from center
+    const render = () => {
+      t++;
+      ctx.clearRect(0, 0, w, h);
+      const cx = w / 2, cy = h / 2;
+
+      // Concentric glowing rings
+      for (let i = 1; i <= 5; i++) {
+        const r = (i / 5) * Math.min(w, h) * 0.48;
+        const grd = ctx.createRadialGradient(cx, cy, r - 1, cx, cy, r + 1);
+        grd.addColorStop(0, `${gemColor}18`);
+        grd.addColorStop(0.5, `${gemColor}08`);
+        grd.addColorStop(1, "transparent");
+        ctx.fillStyle = grd;
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+      }
+
+      // Rotating facet lines
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(t * 0.002);
+      const numLines = 12;
+      for (let i = 0; i < numLines; i++) {
+        const a = (i / numLines) * Math.PI * 2;
+        const len = Math.min(w, h) * 0.45;
+        ctx.strokeStyle = `${gemColor}12`;
+        ctx.lineWidth = 0.6;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(Math.cos(a) * len, Math.sin(a) * len);
+        ctx.stroke();
+      }
+      // Counter-rotate another set
+      ctx.rotate(-t * 0.004);
+      for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * Math.PI * 2;
+        const len = Math.min(w, h) * 0.3;
+        ctx.strokeStyle = `${gemColor}18`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(Math.cos(a) * len, Math.sin(a) * len);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      animId = requestAnimationFrame(render);
+    };
+    render();
+    return () => { window.removeEventListener("resize", resize); cancelAnimationFrame(animId); };
+  }, [gemColor]);
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-      className="w-full max-w-4xl mx-auto select-none px-2 sm:px-4"
-    >
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-5 sm:gap-8 md:gap-12 items-center">
-        {/* Left Column: Specimen Plate with 3D Tilt */}
-        <div className="md:col-span-5">
-          <TiltPlate>
-            <div className="flex flex-col items-center justify-center p-4 sm:p-8 border border-surface-border bg-surface/60 relative">
-              <div className="w-full flex items-center justify-between text-[10px] font-mono uppercase tracking-widest text-foreground-dim border-b border-surface-border pb-2 mb-4 sm:mb-6">
-                <span>PLATE II &bull; MINERALOGY</span>
-                <span>TYPE #{birthstone.primary.slice(0, 3).toUpperCase()}</span>
-              </div>
+    <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+      {/* Deep color backdrop */}
+      <div
+        className="absolute inset-0 z-0"
+        style={{ background: `radial-gradient(ellipse at 50% 50%, ${gemColor}22 0%, transparent 70%)` }}
+      />
+      <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 pointer-events-none w-full h-full z-[1]" />
 
-              <div className="relative my-2 sm:my-4 flex items-center justify-center">
-                <motion.div
-                  animate={{ y: [0, -6, 0] }}
-                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                  className="relative z-10"
-                >
-                  <div className="sm:hidden">
-                    <GemstoneVisual
-                      name={birthstone.primary}
-                      colorHex="#e5a93c"
-                      size={125}
-                    />
-                  </div>
-                  <div className="hidden sm:block">
-                    <GemstoneVisual
-                      name={birthstone.primary}
-                      colorHex="#e5a93c"
-                      size={170}
-                    />
-                  </div>
-                </motion.div>
-              </div>
-
-              <div className="w-full text-center pt-3 sm:pt-4 border-t border-surface-border text-[10px] sm:text-[11px] font-mono text-foreground-muted">
-                Mineral Specimen &bull; <span className="text-white font-medium">{birthstone.primary}</span>
-              </div>
-            </div>
-          </TiltPlate>
+      {/* Gem name — top */}
+      <motion.div
+        initial={{ opacity: 0, y: -30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="absolute top-8 sm:top-12 left-0 right-0 text-center z-20"
+      >
+        <div className="font-mono text-[10px] uppercase tracking-[0.35em] text-white/20 mb-2">Earth Talisman</div>
+        <div
+          className="font-display font-black text-white leading-none"
+          style={{ fontSize: "clamp(2.5rem, 9vw, 8rem)" }}
+        >
+          {birthstone.primary}
         </div>
+      </motion.div>
 
-        {/* Right Column: Editorial Dossier */}
-        <div className="md:col-span-7 text-left space-y-3.5 sm:space-y-5">
-          <div className="space-y-1">
-            <span className="font-mono text-[11px] sm:text-xs uppercase tracking-widest text-accent font-semibold block">
-              EARTH TALISMAN
-            </span>
-            <h2 className="font-display text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-tight">
-              {birthstone.primary}
-            </h2>
-            <p className="text-foreground-muted text-xs font-mono">
-              Recorded Birthstone Specimen
-            </p>
-          </div>
+      {/* Gemstone visual — center */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.4, rotate: -15 }}
+        animate={{ opacity: 1, scale: 1, rotate: 0 }}
+        transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-10 animate-float-y"
+        style={{ filter: `drop-shadow(0 0 80px ${gemColor}60)` }}
+      >
+        <div className="sm:hidden"><GemstoneVisual name={birthstone.primary} colorHex={gemColor} size={160} /></div>
+        <div className="hidden sm:block"><GemstoneVisual name={birthstone.primary} colorHex={gemColor} size={260} /></div>
+      </motion.div>
 
-          {/* Technical Ledger Strip */}
-          <div className="grid grid-cols-2 border-t border-b border-surface-border py-2 sm:py-3 text-[11px] sm:text-xs font-mono divide-x divide-surface-border">
-            <div className="pr-3">
-              <span className="text-[9px] sm:text-[10px] text-foreground-dim block uppercase">Classification</span>
-              <span className="text-white font-semibold text-xs sm:text-sm">Natural Gemstone</span>
-            </div>
-            <div className="pl-3">
-              <span className="text-[9px] sm:text-[10px] text-foreground-dim block uppercase">Tradition</span>
-              <span className="text-white font-semibold text-xs sm:text-sm">Gregorian Almanac</span>
-            </div>
-          </div>
-
-          {/* Narrative Lore */}
-          <p className="text-foreground-muted text-xs sm:text-base leading-relaxed font-sans">
-            {birthstone.lore}
-          </p>
-
-          {birthstone.alternate && (
-            <div className="pt-1 sm:pt-2">
-              <span className="text-[10px] sm:text-xs font-mono text-foreground-dim uppercase tracking-wider block mb-0.5">
-                Alternate Mineral Form
-              </span>
-              <p className="text-xs sm:text-sm font-sans text-white">
-                Historical record also recognizes{" "}
-                <span className="font-medium text-accent">{birthstone.alternate}</span>.
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-    </motion.div>
+      {/* Lore — bottom */}
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5, duration: 0.7 }}
+        className="absolute bottom-8 sm:bottom-12 left-0 right-0 text-center z-20 px-8"
+      >
+        <p className="font-sans text-[11px] sm:text-xs text-white/25 max-w-sm mx-auto leading-relaxed">
+          {birthstone.lore?.split(" ").slice(0, 18).join(" ")}…
+        </p>
+      </motion.div>
+    </div>
   );
 }
-
