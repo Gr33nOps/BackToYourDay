@@ -46,7 +46,7 @@ export function CursorTrail({ className }: { className?: string }) {
         {sparks.map((spark) => (
           <motion.span
             key={spark.id}
-            className="absolute h-1.5 w-1.5 rounded-full bg-terracotta"
+            className="absolute h-1.5 w-1.5 rounded-full bg-accent-electric shadow-[0_0_8px_#38bdf8]"
             style={{ left: spark.x, top: spark.y, translateX: "-50%", translateY: "-50%" }}
             initial={{ opacity: 0.65, scale: 1 }}
             animate={{ opacity: 0, scale: 0.2 }}

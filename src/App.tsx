@@ -1,70 +1,199 @@
-import { useEffect, useState } from "react";
-import { fetchOnThisDay, pickThree, type Entry } from "@/lib/onthisday";
-import { BirthdayPicker } from "@/components/BirthdayPicker";
-import { Loader } from "@/components/Loader";
+import { useEffect, useState, useCallback } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { LandingScene } from "@/components/story/LandingScene";
+import { TimeTravelTransition } from "@/components/story/TimeTravelTransition";
+import { StoryContainer } from "@/components/story/StoryContainer";
 import { ErrorBox } from "@/components/ErrorBox";
-import { Results } from "@/components/Results";
 
-type View = "form" | "loading" | "results" | "error";
+import {
+  getBirthdayIdentity,
+  MONTH_NAMES,
+  type BirthdayIdentity,
+} from "@/lib/almanac";
+import { getMoonPhase, type MoonPhaseInfo } from "@/lib/astronomy";
+import {
+  fetchHistoricalWeather,
+  getDefaultLocation,
+  type HistoricalWeather,
+} from "@/lib/weather";
+import {
+  fetchNasaApod,
+  fetchCinemaForYear,
+  fetchMusicForYear,
+  type NasaApodData,
+  type MovieItem,
+  type SongItem,
+} from "@/lib/culture";
 
-type Picked = { events: Entry[]; births: Entry[]; deaths: Entry[] };
-
-const LOADING_LINES = [
-  "Winding back the clock...",
-  "Dusting off the almanac...",
-  "Setting the dials...",
-  "Turning the pages of history...",
-  "Warming up the time machine...",
-];
+type AppView = "hero" | "transition" | "story" | "error";
 
 export default function App() {
-  const [view, setView] = useState<View>("form");
-  const [message, setMessage] = useState(LOADING_LINES[0]);
-  const [date, setDate] = useState<{ month: number; day: number }>({ month: 1, day: 1 });
-  const [picked, setPicked] = useState<Picked | null>(null);
+  const [view, setView] = useState<AppView>("hero");
+  const [date, setDate] = useState<Date>(new Date(1996, 5, 15));
 
-  async function search(month: number, day: number) {
-    setDate({ month, day });
-    setMessage(LOADING_LINES[Math.floor(Math.random() * LOADING_LINES.length)]);
-    setView("loading");
+  // Loaded story assets
+  const [identity, setIdentity] = useState<BirthdayIdentity | null>(null);
+  const [moon, setMoon] = useState<MoonPhaseInfo | null>(null);
+  const [weather, setWeather] = useState<HistoricalWeather | null>(null);
+  const [sky, setSky] = useState<NasaApodData | null>(null);
+  const [movies, setMovies] = useState<MovieItem[]>([]);
+  const [songs, setSongs] = useState<SongItem[]>([]);
 
-    try {
-      const data = await fetchOnThisDay(month, day);
-      setPicked({
-        events: pickThree(data.events),
-        births: pickThree(data.births),
-        deaths: pickThree(data.deaths),
-      });
-      setView("results");
-    } catch {
-      setView("error");
-    }
-  }
+  const travelToDate = useCallback(
+    async (targetDate: Date, updateUrl: boolean = true) => {
+      setDate(targetDate);
+      setView("transition");
 
+      const year = targetDate.getFullYear();
+      const month = targetDate.getMonth() + 1;
+      const day = targetDate.getDate();
+
+      if (updateUrl) {
+        const url = new URL(window.location.href);
+        url.searchParams.set("day", String(day));
+        url.searchParams.set("month", String(month));
+        url.searchParams.set("year", String(year));
+        url.searchParams.delete("city"); // Ensure no legacy city parameter persists
+        window.history.pushState({}, "", url.toString());
+      }
+
+      // Snappy hyperspace transition animation duration
+      const minAnimationPromise = new Promise((resolve) => setTimeout(resolve, 950));
+
+      try {
+        const defaultLoc = getDefaultLocation();
+        const isSouthern = defaultLoc.latitude < 0;
+        const computedIdentity = getBirthdayIdentity(year, month, day, isSouthern);
+        const computedMoon = getMoonPhase(year, month, day);
+
+        // Fetch asynchronous real-world APIs concurrently with independent fallbacks
+        const [weatherRes, skyRes, moviesRes, songsRes] = await Promise.all([
+          fetchHistoricalWeather(defaultLoc, year, month, day),
+          fetchNasaApod(year, month, day),
+          fetchCinemaForYear(year),
+          fetchMusicForYear(year),
+          minAnimationPromise,
+        ]);
+
+        setIdentity(computedIdentity);
+        setMoon(computedMoon);
+        setWeather(weatherRes);
+        setSky(skyRes);
+        setMovies(moviesRes);
+        setSongs(songsRes);
+
+        setView("story");
+      } catch (err) {
+        console.error("Failed to load time capsule:", err);
+        setView("error");
+      }
+    },
+    []
+  );
+
+  // Check URL query parameters on initial page load
   useEffect(() => {
-    if (view === "results" || view === "form") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const dayParam = params.get("day");
+      const monthParam = params.get("month");
+      const yearParam = params.get("year");
+
+      if (dayParam && monthParam && yearParam) {
+        const d = parseInt(dayParam, 10);
+        const m = parseInt(monthParam, 10);
+        const y = parseInt(yearParam, 10);
+
+        if (d >= 1 && d <= 31 && m >= 1 && m <= 12 && y >= 1920 && y <= new Date().getFullYear()) {
+          const parsedDate = new Date(y, m - 1, d);
+          travelToDate(parsedDate, false);
+        }
+      }
+    } catch {
+      // ignore
     }
-  }, [view]);
+  }, [travelToDate]);
+
+  const handleResetToHero = () => {
+    setView("hero");
+    const url = new URL(window.location.origin + window.location.pathname);
+    window.history.pushState({}, "", url.toString());
+  };
+
+  const monthName = MONTH_NAMES[date.getMonth()] || "January";
 
   return (
-    <main className="mx-auto max-w-container px-4 pb-12 pt-5 sm:px-[22px] sm:pb-[72px] sm:pt-7">
-      {view === "form" && <BirthdayPicker onSubmit={search} />}
+    <div className="min-h-screen bg-canvas text-foreground selection:bg-accent selection:text-black font-sans antialiased">
+      <AnimatePresence mode="wait">
+        {/* VIEW 1: HERO LANDING SCENE */}
+        {view === "hero" && (
+          <motion.div
+            key="hero-scene"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.35 }}
+          >
+            <LandingScene
+              initialDate={date}
+              onSubmit={(d) => travelToDate(d, true)}
+            />
+          </motion.div>
+        )}
 
-      {view === "loading" && <Loader message={message} />}
+        {/* VIEW 2: TIME TRAVEL TRANSITION */}
+        {view === "transition" && (
+          <motion.div
+            key="transition-scene"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            <TimeTravelTransition
+              targetYear={date.getFullYear()}
+              targetMonthName={monthName}
+              targetDay={date.getDate()}
+            />
+          </motion.div>
+        )}
 
-      {view === "error" && <ErrorBox onRetry={() => search(date.month, date.day)} />}
+        {/* VIEW 3: ERROR BOX */}
+        {view === "error" && (
+          <motion.div
+            key="error-scene"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="min-h-screen flex items-center justify-center p-6"
+          >
+            <ErrorBox onRetry={() => travelToDate(date, false)} />
+          </motion.div>
+        )}
 
-      {view === "results" && picked && (
-        <Results
-          month={date.month}
-          day={date.day}
-          events={picked.events}
-          births={picked.births}
-          deaths={picked.deaths}
-          onAgain={() => setView("form")}
-        />
-      )}
-    </main>
+        {/* VIEW 4: STORY SLIDESHOW EXPERIENCE */}
+        {view === "story" && identity && moon && weather && sky && (
+          <motion.div
+            key="story-scene"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <StoryContainer
+              date={date}
+              monthName={monthName}
+              identity={identity}
+              moon={moon}
+              weather={weather}
+              sky={sky}
+              movies={movies}
+              songs={songs}
+              onReset={handleResetToHero}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }

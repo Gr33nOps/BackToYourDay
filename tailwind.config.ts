@@ -5,41 +5,31 @@ export default {
   theme: {
     extend: {
       colors: {
-        paper: {
-          DEFAULT: "var(--paper)",
-          deep: "var(--paper-deep)",
+        canvas: {
+          DEFAULT: "#090a0c",
+          subtle: "#111317",
         },
-        card: "var(--card)",
-        ink: "var(--ink)",
-        muted: "var(--muted)",
-        line: "var(--border)",
-        "line-soft": "var(--border-soft)",
-        terracotta: {
-          DEFAULT: "var(--terracotta)",
-          deep: "var(--terracotta-deep)",
+        surface: {
+          DEFAULT: "#14161d",
+          raised: "#1a1d26",
+          border: "#262933",
         },
-        teal: {
-          DEFAULT: "var(--teal)",
-          deep: "var(--teal-deep)",
+        foreground: {
+          DEFAULT: "#ffffff",
+          muted: "#8a91a0",
+          dim: "#525866",
         },
-        slateink: "var(--slate-deep)",
+        // STRICT SINGLE ACCENT: Archival Amber
+        accent: {
+          DEFAULT: "#e5a93c",
+          hover: "#d4962b",
+          subtle: "rgba(229, 169, 60, 0.12)",
+        },
       },
       fontFamily: {
-        display: ["Fraunces", "Georgia", "Times New Roman", "serif"],
-        sans: ["Figtree", "Segoe UI", "system-ui", "sans-serif"],
-      },
-      borderRadius: {
-        sm: "8px",
-        md: "14px",
-        lg: "22px",
-      },
-      boxShadow: {
-        sm: "0 1px 2px rgba(60, 47, 28, 0.06)",
-        md: "0 10px 26px -14px rgba(74, 54, 28, 0.45)",
-        lg: "0 22px 48px -22px rgba(74, 54, 28, 0.55)",
-      },
-      maxWidth: {
-        container: "980px",
+        display: ["Syne", "system-ui", "sans-serif"],
+        sans: ["Plus Jakarta Sans", "system-ui", "sans-serif"],
+        mono: ["ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "monospace"],
       },
     },
   },
