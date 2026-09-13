@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { BotanicalVisual } from "@/components/visuals/BotanicalVisual";
 import type { BirthBotanicals } from "@/lib/almanac";
+import { prefersReducedMotion } from "@/utils/motion";
 
 interface SceneBotanicalProps {
   botanicals: BirthBotanicals;
@@ -23,7 +24,6 @@ export function SceneBotanical({ botanicals }: SceneBotanicalProps) {
     const resize = () => { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; };
     window.addEventListener("resize", resize);
 
-    // Drifting petal-like particles
     const petals = Array.from({ length: 60 }, () => ({
       x: Math.random() * w,
       y: Math.random() * h + h,
@@ -32,39 +32,43 @@ export function SceneBotanical({ botanicals }: SceneBotanicalProps) {
       r: Math.random() * 6 + 2,
       rot: Math.random() * Math.PI * 2,
       rotSpeed: (Math.random() - 0.5) * 0.04,
-      alpha: Math.random() * 0.4 + 0.1,
+      alpha: Math.random() * 0.38 + 0.08,
     }));
+
+    if (prefersReducedMotion()) {
+      // Static: ambient glow + scattered petals
+      const grd = ctx.createRadialGradient(w / 2, h * 0.6, 0, w / 2, h * 0.6, Math.min(w, h) * 0.6);
+      grd.addColorStop(0, "rgba(100,180,100,0.05)"); grd.addColorStop(1, "transparent");
+      ctx.fillStyle = grd; ctx.fillRect(0, 0, w, h);
+      for (const p of petals.slice(0, 20)) {
+        p.y = Math.random() * h;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+        ctx.fillStyle = `rgba(180,220,160,${p.alpha * 0.6})`;
+        ctx.beginPath(); ctx.ellipse(0, 0, p.r * 0.5, p.r, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+      return () => window.removeEventListener("resize", resize);
+    }
 
     const render = () => {
       t++;
       ctx.clearRect(0, 0, w, h);
 
-      // Soft green radial glow
       const grd = ctx.createRadialGradient(w / 2, h * 0.6, 0, w / 2, h * 0.6, Math.min(w, h) * 0.6);
-      grd.addColorStop(0, "rgba(100,180,100,0.06)");
+      grd.addColorStop(0, "rgba(100,180,100,0.05)");
       grd.addColorStop(1, "transparent");
-      ctx.fillStyle = grd;
-      ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = grd; ctx.fillRect(0, 0, w, h);
 
-      // Petals
       for (const p of petals) {
         p.x += p.vx + Math.sin(t / 40 + p.y / 100) * 0.4;
         p.y += p.vy;
         p.rot += p.rotSpeed;
-        if (p.y < -20) {
-          p.y = h + 20;
-          p.x = Math.random() * w;
-        }
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.rot);
+        if (p.y < -20) { p.y = h + 20; p.x = Math.random() * w; }
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
         ctx.fillStyle = `rgba(180,220,160,${p.alpha})`;
-        ctx.beginPath();
-        ctx.ellipse(0, 0, p.r * 0.5, p.r, 0, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, 0, p.r * 0.5, p.r, 0, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
       }
-
       animId = requestAnimationFrame(render);
     };
     render();
@@ -75,18 +79,17 @@ export function SceneBotanical({ botanicals }: SceneBotanicalProps) {
     <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
       <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 pointer-events-none w-full h-full z-0" />
 
-      {/* Bottom gradient */}
       <div className="absolute bottom-0 left-0 right-0 h-1/3 z-[1] pointer-events-none"
         style={{ background: "linear-gradient(to top, rgba(5,5,7,0.6), transparent)" }} />
 
-      {/* Flower name — top */}
+      {/* Flower name — top. Primary reveal: fade only. */}
       <motion.div
-        initial={{ opacity: 0, y: -24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.1, duration: 0.8 }}
         className="absolute top-8 sm:top-12 left-0 right-0 text-center z-20"
       >
-        <div className="font-mono text-[10px] uppercase tracking-[0.35em] text-white/20 mb-2">Birth Flower</div>
+        <div className="font-mono text-[10px] uppercase tracking-[0.35em] text-white/45 mb-2">Birth Flower</div>
         <div
           className="font-display font-black text-white leading-none"
           style={{ fontSize: "clamp(2.5rem, 9vw, 8rem)" }}
@@ -95,28 +98,28 @@ export function SceneBotanical({ botanicals }: SceneBotanicalProps) {
         </div>
       </motion.div>
 
-      {/* Botanical visual — center */}
+      {/* Botanical visual — center. No float-y. */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.5, y: 40 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10 animate-float-y"
-        style={{ filter: "drop-shadow(0 20px 60px rgba(100,200,100,0.25))" }}
+        initial={{ opacity: 0, scale: 0.6 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-10"
+        style={{ filter: "drop-shadow(0 16px 50px rgba(100,200,100,0.22))" }}
       >
         <div className="sm:hidden"><BotanicalVisual name={flower.name} size={180} /></div>
         <div className="hidden sm:block"><BotanicalVisual name={flower.name} size={300} /></div>
       </motion.div>
 
-      {/* Meaning — bottom */}
+      {/* Meaning — bottom. Secondary: plain opacity. */}
       <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         transition={{ delay: 0.5, duration: 0.7 }}
         className="absolute bottom-8 sm:bottom-12 left-0 right-0 text-center z-20"
       >
-        <div className="font-mono text-xs text-white/30 italic">{flower.meaning}</div>
+        <div className="font-mono text-sm text-white/55 italic">{flower.meaning}</div>
         {botanicals.secondary && (
-          <div className="font-mono text-[10px] text-white/15 mt-1 uppercase tracking-widest">
+          <div className="font-mono text-[11px] text-white/35 mt-1 uppercase tracking-widest">
             Also: {botanicals.secondary.name}
           </div>
         )}

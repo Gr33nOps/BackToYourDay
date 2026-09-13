@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { ZodiacGlyph } from "@/components/visuals/ZodiacGlyph";
 import { WesternZodiac } from "@/lib/almanac";
+import { prefersReducedMotion } from "@/utils/motion";
 
 interface SceneZodiacProps {
   zodiac: WesternZodiac;
@@ -42,6 +43,27 @@ export function SceneZodiac({ zodiac }: SceneZodiacProps) {
       x: Math.random() * w, y: Math.random() * h,
       r: Math.random() + 0.2, twinkle: Math.random() * Math.PI * 2,
     }));
+
+    if (prefersReducedMotion()) {
+      // Static: stars + constellation lines fully drawn
+      for (const s of bgStars) {
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255,255,255,0.12)"; ctx.fill();
+      }
+      for (let i = 0; i < stars.length; i++) {
+        stars[i].x = stars[i].bx; stars[i].y = stars[i].by;
+      }
+      for (let i = 0; i < stars.length; i++) {
+        const a = stars[i]; const b = stars[(i + 1) % stars.length];
+        ctx.strokeStyle = "rgba(229,169,60,0.12)"; ctx.lineWidth = 0.5;
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      }
+      for (const s of stars) {
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(229,169,60,0.5)"; ctx.fill();
+      }
+      return () => window.removeEventListener("resize", resize);
+    }
 
     const render = () => {
       t++;
@@ -140,18 +162,18 @@ export function SceneZodiac({ zodiac }: SceneZodiacProps) {
         >
           {zodiac.name}
         </div>
-        <div className="font-mono text-xs text-white/25 mt-2 uppercase tracking-wider">{zodiac.element} · {zodiac.dates}</div>
+        <div className="font-mono text-xs text-white/45 mt-2 uppercase tracking-wider">{zodiac.element} · {zodiac.dates}</div>
       </motion.div>
 
-      {/* Motto — bottom */}
+      {/* Motto — bottom. Secondary: plain opacity only. */}
       {zodiac.latinMotto && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ delay: 0.5, duration: 0.7 }}
           className="absolute bottom-8 sm:bottom-12 left-0 right-0 text-center z-20"
         >
-          <div className="font-mono text-xs italic text-accent/50">"{zodiac.latinMotto}"</div>
+          <div className="font-mono text-xs italic text-accent/60">"{zodiac.latinMotto}"</div>
         </motion.div>
       )}
     </div>

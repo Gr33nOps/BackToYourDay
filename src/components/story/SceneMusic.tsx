@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import type { SongItem } from "@/lib/culture";
+import { prefersReducedMotion } from "@/utils/motion";
 
 interface SceneMusicProps {
   songs: SongItem[];
@@ -18,13 +19,11 @@ export function SceneMusic({ songs, year }: SceneMusicProps) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     let animId: number;
-    let t = 0;
     let w = (canvas.width = window.innerWidth);
     let h = (canvas.height = window.innerHeight);
     const resize = () => { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; };
     window.addEventListener("resize", resize);
 
-    // Simulated waveform bars
     const numBars = Math.floor(w / 6);
     const bars = Array.from({ length: numBars }, (_, i) => ({
       phase: (i / numBars) * Math.PI * 8 + Math.random() * Math.PI * 2,
@@ -32,28 +31,35 @@ export function SceneMusic({ songs, year }: SceneMusicProps) {
       amp: 0.4 + Math.random() * 0.6,
     }));
 
-    const render = () => {
-      t++;
-      ctx.clearRect(0, 0, w, h);
-
+    // Static waveform snapshot for reduced-motion users
+    if (prefersReducedMotion()) {
       const barW = w / numBars;
       const centerY = h * 0.6;
       const maxH = h * 0.38;
+      for (let i = 0; i < numBars; i++) {
+        const b = bars[i];
+        const height = Math.abs(Math.sin(b.phase) * b.amp) * maxH + 2;
+        const hue = 30 + (i / numBars) * 30;
+        ctx.fillStyle = `hsla(${hue},80%,65%,0.18)`;
+        ctx.fillRect(i * barW, centerY - height, barW - 1, height * 2);
+      }
+      return () => window.removeEventListener("resize", resize);
+    }
 
+    const render = () => {
+      ctx.clearRect(0, 0, w, h);
+      const barW = w / numBars;
+      const centerY = h * 0.6;
+      const maxH = h * 0.38;
       for (let i = 0; i < numBars; i++) {
         const b = bars[i];
         b.phase += b.speed;
         const height = Math.abs(Math.sin(b.phase) * b.amp) * maxH + 2;
-        const x = i * barW;
-        const frac = i / numBars;
-
-        // Gradient bar color
-        const hue = 30 + frac * 30; // amber range
-        const alpha = 0.15 + Math.abs(Math.sin(b.phase)) * 0.25;
+        const hue = 30 + (i / numBars) * 30;
+        const alpha = 0.12 + Math.abs(Math.sin(b.phase)) * 0.22;
         ctx.fillStyle = `hsla(${hue},80%,65%,${alpha})`;
-        ctx.fillRect(x, centerY - height, barW - 1, height * 2);
+        ctx.fillRect(i * barW, centerY - height, barW - 1, height * 2);
       }
-
       animId = requestAnimationFrame(render);
     };
     render();
@@ -61,7 +67,7 @@ export function SceneMusic({ songs, year }: SceneMusicProps) {
   }, []);
 
   return (
-    <div className="relative w-full h-full overflow-hidden flex items-center justify-center">
+    <div className="relative w-full h-full overflow-hidden">
       {/* Album art blurred background */}
       {topSong.albumArt && (
         <div
@@ -70,7 +76,7 @@ export function SceneMusic({ songs, year }: SceneMusicProps) {
             backgroundImage: `url(${topSong.albumArt})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
-            filter: "blur(40px) brightness(0.2) saturate(0.5)",
+            filter: "blur(40px) brightness(0.18) saturate(0.5)",
             transform: "scale(1.2)",
           }}
         />
@@ -79,96 +85,85 @@ export function SceneMusic({ songs, year }: SceneMusicProps) {
       {/* Waveform canvas */}
       <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 pointer-events-none w-full h-full z-[1]" />
 
-      {/* Top label */}
-      <div className="absolute top-8 sm:top-12 left-8 sm:left-14 z-20">
-        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/25">
-          Airwaves · {year}
-        </div>
-      </div>
+      {/* Left-aligned layout — asymmetric, not centered */}
+      <div className="absolute inset-0 z-20 flex items-center px-8 sm:px-14">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-8 sm:gap-12 w-full">
 
-      {/* #1 badge */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.1, duration: 0.6, type: "spring" }}
-        className="absolute top-8 sm:top-12 right-8 sm:right-14 z-20"
-      >
-        <div
-          className="font-mono text-[10px] uppercase tracking-widest text-accent px-2 py-1"
-          style={{ border: "1px solid rgba(229,169,60,0.3)", background: "rgba(229,169,60,0.05)" }}
-        >
-          #1
-        </div>
-      </motion.div>
-
-      {/* Main centered content */}
-      <div className="relative z-20 text-center px-8 w-full max-w-3xl">
-        {/* Album art */}
-        <motion.div
-          initial={{ opacity: 0, y: 30, scale: 0.8 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="mx-auto mb-6 sm:mb-8 animate-float-y"
-          style={{
-            width: "clamp(100px, 18vw, 200px)",
-            aspectRatio: "1",
-            boxShadow: "0 30px 80px rgba(0,0,0,0.7), 0 0 60px rgba(229,169,60,0.1)",
-          }}
-        >
-          <img
-            src={topSong.albumArt}
-            alt={topSong.title}
-            className="w-full h-full object-cover"
-          />
-        </motion.div>
-
-        {/* Marquee title */}
-        <div className="overflow-hidden w-full">
+          {/* Album art — fixed size, no float */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-            className="font-display font-black text-white whitespace-nowrap"
-            style={{ fontSize: "clamp(2rem, 8vw, 7rem)" }}
+            initial={{ opacity: 0, scale: 0.85 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="shrink-0"
+            style={{
+              width: "clamp(100px, 16vw, 200px)",
+              aspectRatio: "1",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.7)",
+            }}
           >
-            <span className="inline-block animate-marquee">
-              {topSong.title}&nbsp;&nbsp;&nbsp;·&nbsp;&nbsp;&nbsp;{topSong.title}&nbsp;&nbsp;&nbsp;·&nbsp;&nbsp;&nbsp;
-            </span>
+            <img
+              src={topSong.albumArt}
+              alt={topSong.title}
+              className="w-full h-full object-cover"
+              loading="eager"
+            />
           </motion.div>
-        </div>
 
-        {/* Artist */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35, duration: 0.6 }}
-          className="font-mono text-white/40 uppercase tracking-widest mt-3"
-          style={{ fontSize: "clamp(0.7rem, 2vw, 1.1rem)" }}
-        >
-          {topSong.artist}
-        </motion.div>
+          {/* Song info — primary reveal */}
+          <div className="min-w-0 flex-1">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.15, duration: 0.6 }}
+              className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/45 mb-3"
+            >
+              Airwaves · {year} · #1
+            </motion.div>
+
+            {/* Static title — readable, not scrolling. Rule #55. */}
+            <motion.h2
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+              className="font-display font-black text-white leading-[0.9] break-words"
+              style={{ fontSize: "clamp(2rem, 7vw, 6rem)" }}
+            >
+              {topSong.title}
+            </motion.h2>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.35, duration: 0.6 }}
+              className="font-mono text-white/55 uppercase tracking-widest mt-3"
+              style={{ fontSize: "clamp(0.7rem, 1.8vw, 1rem)" }}
+            >
+              {topSong.artist}
+            </motion.div>
+          </div>
+        </div>
       </div>
 
-      {/* Runner-ups — bottom */}
+      {/* Runner-ups — bottom right, secondary */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         transition={{ delay: 0.6, duration: 0.6 }}
-        className="absolute bottom-6 sm:bottom-10 left-8 sm:left-14 right-8 sm:right-14 z-20 flex gap-3 justify-center"
+        className="absolute bottom-6 sm:bottom-10 right-8 sm:right-14 z-20 flex flex-col gap-2"
       >
         {songs.slice(1, 4).map((s) => (
           <div
             key={s.title}
-            className="flex items-center gap-2 px-3 py-1.5"
+            className="flex items-center gap-2 px-3 py-2"
             style={{
-              background: "rgba(0,0,0,0.4)",
-              border: "1px solid rgba(255,255,255,0.06)",
+              background: "rgba(0,0,0,0.45)",
+              border: "1px solid rgba(255,255,255,0.07)",
               backdropFilter: "blur(8px)",
-              maxWidth: "160px",
+              maxWidth: "180px",
             }}
           >
             <img src={s.albumArt} alt={s.title} className="w-6 h-6 object-cover shrink-0" />
-            <span className="font-mono text-[9px] text-white/40 truncate">{s.title}</span>
+            <span className="font-mono text-[10px] text-white/55 truncate">{s.title}</span>
           </div>
         ))}
       </motion.div>

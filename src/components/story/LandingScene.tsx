@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { SimpleDatePicker } from "@/components/ui/SimpleDatePicker";
 import { StarfieldBackground } from "@/components/effects/StarfieldBackground";
 import { sound } from "@/lib/sound";
+import { prefersReducedMotion } from "@/utils/motion";
 
 interface LandingSceneProps {
   initialDate?: Date;
@@ -21,7 +22,7 @@ export function LandingScene({ initialDate, onSubmit }: LandingSceneProps) {
     });
   }, [date]);
 
-  // Constellation / nebula canvas
+  // Constellation canvas — reduced motion: static render only
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -39,27 +40,13 @@ export function LandingScene({ initialDate, onSubmit }: LandingSceneProps) {
     };
     window.addEventListener("resize", resize);
 
-    // Drifting nebula particles
-    type Particle = { x: number; y: number; vx: number; vy: number; r: number; hue: number; life: number; maxLife: number };
-    const particles: Particle[] = Array.from({ length: 120 }, () => ({
+    // Constellation star nodes — placed once, drift slowly
+    const nodes = Array.from({ length: 16 }, () => ({
       x: Math.random() * w,
       y: Math.random() * h,
-      vx: (Math.random() - 0.5) * 0.25,
-      vy: (Math.random() - 0.5) * 0.25,
-      r: Math.random() * 2.5 + 0.5,
-      hue: Math.random() > 0.6 ? 40 : Math.random() > 0.5 ? 195 : 270,
-      life: Math.random() * 200,
-      maxLife: 200 + Math.random() * 200,
-    }));
-
-    // Constellation star nodes
-    const nodes = Array.from({ length: 18 }, () => ({
-      x: Math.random() * w,
-      y: Math.random() * h,
-      ox: 0,
-      oy: 0,
+      ox: 0, oy: 0,
     })).map(n => ({ ...n, ox: n.x, oy: n.y }));
-    // Edges between nearby nodes
+
     const edges: [number, number][] = [];
     for (let i = 0; i < nodes.length; i++) {
       for (let j = i + 1; j < nodes.length; j++) {
@@ -71,54 +58,51 @@ export function LandingScene({ initialDate, onSubmit }: LandingSceneProps) {
       }
     }
 
+    // Render static frame for reduced-motion users
+    const renderStatic = () => {
+      ctx.clearRect(0, 0, w, h);
+      ctx.lineWidth = 0.4;
+      for (const [a, b] of edges) {
+        ctx.strokeStyle = "rgba(229,169,60,0.07)";
+        ctx.beginPath();
+        ctx.moveTo(nodes[a].x, nodes[a].y);
+        ctx.lineTo(nodes[b].x, nodes[b].y);
+        ctx.stroke();
+      }
+      for (const n of nodes) {
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, 1.2, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(229,169,60,0.35)";
+        ctx.fill();
+      }
+    };
+
+    if (prefersReducedMotion()) {
+      renderStatic();
+      return () => window.removeEventListener("resize", resize);
+    }
+
     const render = () => {
       t++;
       ctx.clearRect(0, 0, w, h);
 
-      // Draw slow constellation lines with animated draw progress
       const progress = Math.min(1, t / 240);
+
       ctx.lineWidth = 0.4;
       for (const [a, b] of edges) {
-        const na = nodes[a];
-        const nb = nodes[b];
-        ctx.strokeStyle = `rgba(229,169,60,${0.08 * progress})`;
+        ctx.strokeStyle = `rgba(229,169,60,${0.07 * progress})`;
         ctx.beginPath();
-        ctx.moveTo(na.x, na.y);
-        ctx.lineTo(nb.x, nb.y);
+        ctx.moveTo(nodes[a].x, nodes[a].y);
+        ctx.lineTo(nodes[b].x, nodes[b].y);
         ctx.stroke();
       }
 
-      // Node stars
       for (const n of nodes) {
-        n.x = n.ox + Math.sin(t / 90 + n.ox) * 8;
+        n.x = n.ox + Math.sin(t / 90 + n.ox) * 7;
         n.y = n.oy + Math.cos(t / 110 + n.oy) * 5;
         ctx.beginPath();
         ctx.arc(n.x, n.y, 1.2, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(229,169,60,${0.4 * progress})`;
-        ctx.fill();
-      }
-
-      // Particles
-      for (const p of particles) {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.life++;
-        if (p.life >= p.maxLife) {
-          p.x = Math.random() * w;
-          p.y = Math.random() * h;
-          p.life = 0;
-          p.maxLife = 200 + Math.random() * 200;
-        }
-        if (p.x < 0) p.x = w;
-        if (p.x > w) p.x = 0;
-        if (p.y < 0) p.y = h;
-        if (p.y > h) p.y = 0;
-
-        const lf = p.life / p.maxLife;
-        const alpha = Math.sin(lf * Math.PI) * 0.55;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${p.hue},80%,70%,${alpha})`;
+        ctx.fillStyle = `rgba(229,169,60,${0.38 * progress})`;
         ctx.fill();
       }
 
@@ -139,7 +123,7 @@ export function LandingScene({ initialDate, onSubmit }: LandingSceneProps) {
 
   return (
     <div className="min-h-[100dvh] relative w-full flex flex-col items-center justify-center overflow-hidden bg-[#050507]">
-      {/* Nebula canvas */}
+      {/* Constellation canvas — the only ambient layer */}
       <canvas
         ref={canvasRef}
         aria-hidden="true"
@@ -149,107 +133,68 @@ export function LandingScene({ initialDate, onSubmit }: LandingSceneProps) {
       {/* Starfield */}
       <StarfieldBackground starCount={140} enableShootingStars={true} />
 
-      {/* Ambient aurora blobs */}
-      <div className="absolute inset-0 z-[1] pointer-events-none overflow-hidden">
-        <div
-          className="absolute animate-amb-pulse"
-          style={{
-            width: "60vw", height: "60vw",
-            top: "10%", left: "-10%",
-            background: "radial-gradient(ellipse, rgba(56,189,248,0.06) 0%, transparent 70%)",
-            borderRadius: "50%",
-            animationDuration: "7s",
-          }}
-        />
-        <div
-          className="absolute animate-amb-pulse"
-          style={{
-            width: "50vw", height: "50vw",
-            bottom: "5%", right: "-8%",
-            background: "radial-gradient(ellipse, rgba(167,139,250,0.07) 0%, transparent 70%)",
-            borderRadius: "50%",
-            animationDuration: "9s",
-            animationDelay: "2s",
-          }}
-        />
-        <div
-          className="absolute animate-amb-pulse"
-          style={{
-            width: "40vw", height: "40vw",
-            top: "40%", left: "50%",
-            transform: "translate(-50%,-50%)",
-            background: "radial-gradient(ellipse, rgba(229,169,60,0.05) 0%, transparent 70%)",
-            borderRadius: "50%",
-            animationDuration: "11s",
-            animationDelay: "1s",
-          }}
-        />
-      </div>
-
-      {/* Top brand */}
-      <motion.div
-        initial={{ opacity: 0, y: -12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="absolute top-6 left-0 right-0 z-20 flex items-center justify-center"
-      >
+      {/* Top brand — static, no animation */}
+      <div className="absolute top-6 left-0 right-0 z-20 flex items-center justify-center">
         <div className="flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/30">
+          {/* Static dot — not a live status, so not pulsing */}
+          <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/45">
             BACKTOYOURDAY
           </span>
         </div>
-      </motion.div>
+      </div>
 
       {/* Main content */}
       <div className="relative z-10 flex flex-col items-center text-center px-6 w-full max-w-xl">
-        {/* Giant headline */}
+        {/* Giant headline — primary reveal gets the entrance animation */}
         <motion.h1
-          initial={{ opacity: 0, y: 30, filter: "blur(12px)" }}
+          initial={{ opacity: 0, y: 32, filter: "blur(10px)" }}
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
-          className="font-display font-black leading-[0.88] tracking-tight text-white mb-4 select-none"
+          transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
+          className="font-display font-black leading-[0.88] tracking-tight text-white mb-3 select-none"
           style={{ fontSize: "clamp(3.5rem, 14vw, 10rem)" }}
         >
           Your
           <br />
-          <span className="text-accent scene-text-shadow">Day.</span>
+          {/* Accent on "Day." — the product name moment, no glow text-shadow */}
+          <span className="text-accent">Day.</span>
         </motion.h1>
 
+        {/* Date range — plain opacity, no y-shift */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
-          className="font-mono text-[11px] uppercase tracking-[0.25em] text-white/25 mb-12"
+          transition={{ delay: 0.55, duration: 0.7 }}
+          className="font-mono text-[11px] uppercase tracking-[0.25em] text-white/45 mb-10"
         >
           1920 — present
         </motion.p>
 
-        {/* Date picker card */}
+        {/* Date picker card — opacity + slight scale, no y on card */}
         <motion.div
-          initial={{ opacity: 0, y: 24, scale: 0.96 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ delay: 0.4, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          initial={{ opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.35, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           className="w-full"
         >
           <div
             className="w-full p-6 sm:p-8 space-y-5"
             style={{
-              background: "rgba(13,14,20,0.85)",
-              border: "1px solid rgba(229,169,60,0.15)",
-              backdropFilter: "blur(20px)",
-              boxShadow: "0 0 60px rgba(229,169,60,0.06), inset 0 1px 0 rgba(255,255,255,0.04)",
+              background: "rgba(13,14,20,0.88)",
+              border: "1px solid rgba(229,169,60,0.14)",
+              backdropFilter: "blur(16px)",
             }}
           >
             {/* Selected date display */}
             <div className="text-center">
-              <div className="font-mono text-[10px] uppercase tracking-widest text-white/25 mb-1">
+              <div className="font-mono text-[10px] uppercase tracking-widest text-white/40 mb-1">
                 selected date
               </div>
               <motion.div
                 key={formattedDate}
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2 }}
                 className="font-display text-2xl sm:text-3xl font-bold text-white"
               >
                 {formattedDate}
@@ -258,47 +203,44 @@ export function LandingScene({ initialDate, onSubmit }: LandingSceneProps) {
 
             <SimpleDatePicker value={date} onChange={setDate} />
 
-            {/* CTA */}
+            {/* CTA — specific action label, not "Get Started" */}
             <button
               type="button"
               onClick={handleSubmit}
-              className="w-full relative overflow-hidden group cursor-pointer"
+              className="w-full relative cursor-pointer transition-colors"
               style={{
                 padding: "14px 24px",
-                background: "rgba(229,169,60,0.12)",
-                border: "1px solid rgba(229,169,60,0.4)",
+                background: "rgba(229,169,60,0.10)",
+                border: "1px solid rgba(229,169,60,0.38)",
                 color: "#e5a93c",
                 fontFamily: "monospace",
                 fontSize: "11px",
-                letterSpacing: "0.25em",
+                letterSpacing: "0.22em",
                 textTransform: "uppercase",
                 fontWeight: "700",
-                transition: "all 0.3s",
               }}
               onMouseEnter={e => {
-                (e.currentTarget as HTMLButtonElement).style.background = "rgba(229,169,60,0.22)";
-                (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 0 30px rgba(229,169,60,0.2)";
+                (e.currentTarget as HTMLButtonElement).style.background = "rgba(229,169,60,0.2)";
               }}
               onMouseLeave={e => {
-                (e.currentTarget as HTMLButtonElement).style.background = "rgba(229,169,60,0.12)";
-                (e.currentTarget as HTMLButtonElement).style.boxShadow = "none";
+                (e.currentTarget as HTMLButtonElement).style.background = "rgba(229,169,60,0.10)";
               }}
             >
-              Explore This Day →
+              Reveal This Day →
             </button>
           </div>
         </motion.div>
       </div>
 
-      {/* Bottom hint */}
+      {/* Bottom — readable size, readable contrast */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.2, duration: 0.8 }}
+        transition={{ delay: 1.1, duration: 0.7 }}
         className="absolute bottom-6 left-0 right-0 z-20 flex items-center justify-center"
       >
-        <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-white/15">
-          Astronomical · Meteorological · Cultural
+        <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-white/35">
+          Astronomy · Weather · Culture
         </span>
       </motion.div>
     </div>

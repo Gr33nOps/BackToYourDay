@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { prefersReducedMotion } from "@/utils/motion";
 
 interface Star {
   x: number;
@@ -102,6 +103,21 @@ export function StarfieldBackground({
     };
 
     initStars();
+
+    if (prefersReducedMotion()) {
+      ctx.clearRect(0, 0, width, height);
+      for (const star of stars) {
+        ctx.fillStyle = `rgba(${star.r}, ${star.g}, ${star.b}, ${star.baseAlpha * 0.8})`;
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      return () => {
+        window.removeEventListener("resize", handleResize);
+        window.removeEventListener("mousemove", handleMouseMove);
+      };
+    }
+
     let lastTime = performance.now();
 
     const render = (time: number) => {

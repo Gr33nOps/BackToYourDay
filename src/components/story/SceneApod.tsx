@@ -20,7 +20,7 @@ export function SceneApod({ sky, formattedDate }: SceneApodProps) {
       {/* Full-bleed image with Ken Burns zoom */}
       {!imageLoaded && (
         <div className="absolute inset-0 bg-[#050507] flex items-center justify-center z-10">
-          <div className="font-mono text-[10px] uppercase tracking-widest text-white/20 animate-pulse">
+          <div className="font-mono text-[11px] uppercase tracking-widest text-white/40">
             Loading…
           </div>
         </div>
@@ -51,8 +51,8 @@ export function SceneApod({ sky, formattedDate }: SceneApodProps) {
         transition={{ delay: 0.4, duration: 0.6 }}
         className="absolute top-8 sm:top-12 left-8 sm:left-14 z-10 flex items-center gap-2"
       >
-        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-        <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-white/35">NASA · {formattedDate}</span>
+        <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+        <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-white/50">NASA · {formattedDate}</span>
       </motion.div>
 
       {/* View full res link — top right */}
@@ -64,11 +64,11 @@ export function SceneApod({ sky, formattedDate }: SceneApodProps) {
           href={sky.hdUrl || sky.imageUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="absolute top-8 sm:top-12 right-8 sm:right-14 z-10 flex items-center gap-1.5 cursor-pointer"
-          style={{ color: "rgba(255,255,255,0.3)", textDecoration: "none" }}
+          className="absolute top-8 sm:top-12 right-8 sm:right-14 z-10 flex items-center gap-1.5 cursor-pointer text-white/50 hover:text-white/80 transition-colors"
+          style={{ textDecoration: "none" }}
         >
           <ExternalLink className="w-3.5 h-3.5" />
-          <span className="font-mono text-[10px] uppercase tracking-widest hover:text-white/60 transition-colors">Full Res</span>
+          <span className="font-mono text-[10px] uppercase tracking-widest">Full Res</span>
         </motion.a>
       )}
 
@@ -79,7 +79,7 @@ export function SceneApod({ sky, formattedDate }: SceneApodProps) {
         transition={{ delay: 0.5, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         className="absolute bottom-8 sm:bottom-12 left-8 sm:left-14 right-8 sm:right-14 z-10"
       >
-        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/25 mb-2">
+        <div className="font-mono text-[11px] uppercase tracking-[0.3em] text-white/45 mb-2">
           {sky.constellationFocus || "Deep Space"}
         </div>
         <h2
@@ -88,7 +88,7 @@ export function SceneApod({ sky, formattedDate }: SceneApodProps) {
         >
           {sky.title}
         </h2>
-        <div className="font-mono text-[10px] text-white/20 mt-2">
+        <div className="font-mono text-[11px] text-white/40 mt-2">
           {sky.copyright || "NASA / ESA Space Telescopes"}
         </div>
       </motion.div>

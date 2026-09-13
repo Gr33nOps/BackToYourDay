@@ -44,7 +44,7 @@ export function SceneCinema({ movies, year }: SceneCinemaProps) {
 
       {/* Top label */}
       <div className="absolute top-8 sm:top-12 left-8 sm:left-14 z-10">
-        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/25">
+        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/45">
           Theaters · {year}
         </div>
       </div>
@@ -106,7 +106,7 @@ export function SceneCinema({ movies, year }: SceneCinemaProps) {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="font-mono text-[11px] text-white/30 mt-1 uppercase tracking-wider"
+                className="font-mono text-[11px] text-white/50 mt-1 uppercase tracking-wider"
               >
                 Dir. {current.director}
               </motion.div>
@@ -125,7 +125,7 @@ export function SceneCinema({ movies, year }: SceneCinemaProps) {
             className={`cursor-pointer transition-all duration-300 flex items-center gap-2 px-2 py-1.5 ${
               i === selected
                 ? "opacity-100"
-                : "opacity-30 hover:opacity-60"
+                : "opacity-45 hover:opacity-80"
             }`}
             style={{
               background: "rgba(0,0,0,0.4)",
@@ -139,7 +139,7 @@ export function SceneCinema({ movies, year }: SceneCinemaProps) {
               alt={m.title}
               className="w-7 h-10 object-cover shrink-0"
             />
-            <span className="font-mono text-[9px] text-white/70 truncate leading-tight text-left">
+            <span className="font-mono text-[10px] text-white/70 truncate leading-tight text-left">
               {m.title}
             </span>
           </button>

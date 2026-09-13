@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { HistoricalWeather } from "@/lib/weather";
 import { sound } from "@/lib/sound";
+import { prefersReducedMotion } from "@/utils/motion";
 
 interface SceneWeatherProps {
   weather: HistoricalWeather;
@@ -52,6 +53,14 @@ export function SceneWeather({ weather }: SceneWeatherProps) {
     // Lightning flash state
     let flashTimer = 0;
     let flashActive = false;
+
+    if (prefersReducedMotion()) {
+      // Static: soft backdrop glow, no animated particles
+      const grd = ctx.createRadialGradient(w / 2, h * 0.3, 0, w / 2, h * 0.3, Math.max(w, h));
+      grd.addColorStop(0, "rgba(229,169,60,0.04)"); grd.addColorStop(1, "transparent");
+      ctx.fillStyle = grd; ctx.fillRect(0, 0, w, h);
+      return () => window.removeEventListener("resize", resize);
+    }
 
     const render = () => {
       t++;
@@ -160,8 +169,8 @@ export function SceneWeather({ weather }: SceneWeatherProps) {
         transition={{ delay: 0.4 }}
         className="absolute bottom-8 sm:bottom-12 left-8 sm:left-14 z-20"
       >
-        <div className="font-mono text-[9px] uppercase tracking-widest text-white/20">Sunrise</div>
-        <div className="font-mono text-sm text-white/50 mt-0.5">{weather.sunriseTime}</div>
+        <div className="font-mono text-[11px] uppercase tracking-widest text-white/40">Sunrise</div>
+        <div className="font-mono text-sm text-white/55 mt-0.5">{weather.sunriseTime}</div>
       </motion.div>
 
       {/* Sunset — bottom right */}
@@ -171,8 +180,8 @@ export function SceneWeather({ weather }: SceneWeatherProps) {
         transition={{ delay: 0.5 }}
         className="absolute bottom-8 sm:bottom-12 right-8 sm:right-14 z-20 text-right"
       >
-        <div className="font-mono text-[9px] uppercase tracking-widest text-white/20">Sunset</div>
-        <div className="font-mono text-sm text-white/50 mt-0.5">{weather.sunsetTime}</div>
+        <div className="font-mono text-[11px] uppercase tracking-widest text-white/40">Sunset</div>
+        <div className="font-mono text-sm text-white/55 mt-0.5">{weather.sunsetTime}</div>
       </motion.div>
 
       {/* Unit toggle — top right */}
@@ -183,7 +192,7 @@ export function SceneWeather({ weather }: SceneWeatherProps) {
             type="button"
             onClick={() => handleUnitChange(u)}
             className={`px-2 py-1 font-mono text-[10px] font-bold cursor-pointer transition-all ${
-              unit === u ? "text-accent" : "text-white/20 hover:text-white/40"
+              unit === u ? "text-accent" : "text-white/35 hover:text-white/55"
             }`}
             style={{ background: "none", border: "none" }}
           >

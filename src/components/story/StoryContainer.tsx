@@ -181,7 +181,7 @@ export function StoryContainer({
           style={{ background: "none", border: "none", padding: 0 }}
         >
           <span className="w-1.5 h-1.5 rounded-full bg-accent" />
-          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/30 group-hover:text-white/60 transition-colors">
+          <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/50 group-hover:text-white/80 transition-colors">
             BTYD
           </span>
         </button>
@@ -194,10 +194,10 @@ export function StoryContainer({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 6 }}
             transition={{ duration: 0.2 }}
-            className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/25"
+            className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/50"
           >
             {String(activeScene + 1).padStart(2, "0")} / {String(TOTAL_SCENES).padStart(2, "0")}
-            <span className="hidden sm:inline ml-2 text-white/15">
+            <span className="hidden sm:inline ml-2 text-white/35">
               · {SCENE_NAMES[activeScene]}
             </span>
           </motion.div>
@@ -208,15 +208,15 @@ export function StoryContainer({
           <button
             type="button"
             onClick={handleToggleAudio}
-            className="cursor-pointer text-white/25 hover:text-white/60 transition-colors"
+            className="cursor-pointer text-white/45 hover:text-white/80 transition-colors"
             style={{ background: "none", border: "none", padding: "4px" }}
           >
-            {audioActive ? <Volume2 className="w-3.5 h-3.5 text-accent/60" /> : <VolumeX className="w-3.5 h-3.5" />}
+            {audioActive ? <Volume2 className="w-3.5 h-3.5 text-accent/70" /> : <VolumeX className="w-3.5 h-3.5" />}
           </button>
           <button
             type="button"
             onClick={onReset}
-            className="cursor-pointer text-white/25 hover:text-white/60 transition-colors"
+            className="cursor-pointer text-white/45 hover:text-white/80 transition-colors"
             style={{ background: "none", border: "none", padding: "4px" }}
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -225,9 +225,9 @@ export function StoryContainer({
       </header>
 
       {/* Progress arc — thin hairline at bottom */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 h-[2px] bg-white/5">
+      <div className="fixed bottom-0 left-0 right-0 z-40 h-[2px] bg-white/10">
         <motion.div
-          className="h-full bg-accent/60"
+          className="h-full bg-accent/70"
           animate={{ width: `${((activeScene + 1) / TOTAL_SCENES) * 100}%` }}
           transition={{ duration: 0.35, ease: "easeOut" }}
         />
@@ -247,7 +247,7 @@ export function StoryContainer({
             className={`rounded-full transition-all duration-300 cursor-pointer ${
               activeScene === idx
                 ? "w-[3px] h-5 bg-accent"
-                : "w-[3px] h-[3px] bg-white/15 hover:bg-white/40"
+                : "w-[3px] h-[3px] bg-white/25 hover:bg-white/50"
             }`}
           />
         ))}
@@ -262,12 +262,12 @@ export function StoryContainer({
           type="button"
           onClick={prevScene}
           disabled={activeScene === 0}
-          className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer disabled:opacity-20 transition-opacity"
-          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
+          className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer disabled:opacity-20 transition-opacity text-white/70"
+          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
         >
           ‹
         </button>
-        <span className="font-mono text-[10px] text-white/30 tabular-nums">
+        <span className="font-mono text-[11px] text-white/50 tabular-nums">
           {activeScene + 1} / {TOTAL_SCENES}
         </span>
         {activeScene < TOTAL_SCENES - 1 ? (
@@ -275,7 +275,7 @@ export function StoryContainer({
             type="button"
             onClick={nextScene}
             className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer transition-all"
-            style={{ background: "rgba(229,169,60,0.15)", border: "1px solid rgba(229,169,60,0.3)", color: "#e5a93c" }}
+            style={{ background: "rgba(229,169,60,0.18)", border: "1px solid rgba(229,169,60,0.35)", color: "#e5a93c" }}
           >
             ›
           </button>

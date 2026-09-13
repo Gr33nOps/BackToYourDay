@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { GemstoneVisual } from "@/components/visuals/GemstoneVisual";
 import { BirthstoneInfo } from "@/lib/almanac";
+import { prefersReducedMotion } from "@/utils/motion";
 
 // Map stone names to rich backdrop colors
 const STONE_COLORS: Record<string, string> = {
@@ -42,6 +43,26 @@ export function SceneGemstone({ birthstone }: SceneGemstoneProps) {
     window.addEventListener("resize", resize);
 
     // Rotating facet lines radiating from center
+    const renderStatic = () => {
+      ctx.clearRect(0, 0, w, h);
+      const cx = w / 2, cy = h / 2;
+      for (let i = 1; i <= 5; i++) {
+        const r = (i / 5) * Math.min(w, h) * 0.48;
+        const grd = ctx.createRadialGradient(cx, cy, r - 1, cx, cy, r + 1);
+        grd.addColorStop(0, `${gemColor}18`); grd.addColorStop(1, "transparent");
+        ctx.fillStyle = grd; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.save(); ctx.translate(cx, cy);
+      for (let i = 0; i < 12; i++) {
+        const a = (i / 12) * Math.PI * 2;
+        ctx.strokeStyle = `${gemColor}14`; ctx.lineWidth = 0.6;
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(a) * Math.min(w, h) * 0.45, Math.sin(a) * Math.min(w, h) * 0.45); ctx.stroke();
+      }
+      ctx.restore();
+    };
+
+    if (prefersReducedMotion()) { renderStatic(); return () => window.removeEventListener("resize", resize); }
+
     const render = () => {
       t++;
       ctx.clearRect(0, 0, w, h);
@@ -104,12 +125,12 @@ export function SceneGemstone({ birthstone }: SceneGemstoneProps) {
 
       {/* Gem name — top */}
       <motion.div
-        initial={{ opacity: 0, y: -30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.1, duration: 0.7 }}
         className="absolute top-8 sm:top-12 left-0 right-0 text-center z-20"
       >
-        <div className="font-mono text-[10px] uppercase tracking-[0.35em] text-white/20 mb-2">Earth Talisman</div>
+        <div className="font-mono text-[10px] uppercase tracking-[0.35em] text-white/45 mb-2">Birthstone</div>
         <div
           className="font-display font-black text-white leading-none"
           style={{ fontSize: "clamp(2.5rem, 9vw, 8rem)" }}
@@ -118,26 +139,26 @@ export function SceneGemstone({ birthstone }: SceneGemstoneProps) {
         </div>
       </motion.div>
 
-      {/* Gemstone visual — center */}
+      {/* Gemstone visual — center. No float-y: gemstones are grounded objects. */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.4, rotate: -15 }}
+        initial={{ opacity: 0, scale: 0.5, rotate: -12 }}
         animate={{ opacity: 1, scale: 1, rotate: 0 }}
-        transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10 animate-float-y"
-        style={{ filter: `drop-shadow(0 0 80px ${gemColor}60)` }}
+        transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-10"
+        style={{ filter: `drop-shadow(0 0 60px ${gemColor}50)` }}
       >
         <div className="sm:hidden"><GemstoneVisual name={birthstone.primary} colorHex={gemColor} size={160} /></div>
         <div className="hidden sm:block"><GemstoneVisual name={birthstone.primary} colorHex={gemColor} size={260} /></div>
       </motion.div>
 
-      {/* Lore — bottom */}
+      {/* Lore — bottom, secondary: plain opacity reveal */}
       <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         transition={{ delay: 0.5, duration: 0.7 }}
         className="absolute bottom-8 sm:bottom-12 left-0 right-0 text-center z-20 px-8"
       >
-        <p className="font-sans text-[11px] sm:text-xs text-white/25 max-w-sm mx-auto leading-relaxed">
+        <p className="font-sans text-[12px] sm:text-sm text-white/45 max-w-sm mx-auto leading-relaxed">
           {birthstone.lore?.split(" ").slice(0, 18).join(" ")}…
         </p>
       </motion.div>

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { sound } from "@/lib/sound";
+import { prefersReducedMotion } from "@/utils/motion";
 
 interface TimeTravelTransitionProps {
   targetYear: number;
@@ -52,6 +53,20 @@ export function TimeTravelTransition({
         b: Math.random() * 255 | 0,
       };
     });
+
+    if (prefersReducedMotion()) {
+      ctx.fillStyle = "#050507";
+      ctx.fillRect(0, 0, width, height);
+      for (let i = 0; i < 60; i++) {
+        const x = Math.random() * width;
+        const y = Math.random() * height;
+        ctx.fillStyle = "rgba(255,255,255,0.25)";
+        ctx.beginPath();
+        ctx.arc(x, y, 1, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      return () => window.removeEventListener("resize", handleResize);
+    }
 
     const render = () => {
       t++;
@@ -120,6 +135,13 @@ export function TimeTravelTransition({
   // Rapid year countdown with DOM direct update for speed
   useEffect(() => {
     sound.playWarp();
+    if (prefersReducedMotion()) {
+      if (displayYearRef.current) {
+        displayYearRef.current.textContent = String(targetYear);
+      }
+      return;
+    }
+
     const steps = 28;
     const diff = currentYear - targetYear;
     let step = 0;
@@ -165,7 +187,7 @@ export function TimeTravelTransition({
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         className="relative z-10 text-center select-none px-4"
       >
-        <div className="font-mono text-[11px] uppercase tracking-[0.3em] text-white/30 mb-6">
+        <div className="font-mono text-[11px] uppercase tracking-[0.3em] text-white/50 mb-6">
           TRAVERSING TIME
         </div>
 
@@ -185,13 +207,13 @@ export function TimeTravelTransition({
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
-          className="mt-8 text-white/40 font-mono text-sm tracking-widest uppercase"
+          className="mt-8 text-white/60 font-mono text-sm tracking-widest uppercase"
         >
           {targetMonthName} {targetDay}, {targetYear}
         </motion.div>
 
         {/* Thin amber progress line */}
-        <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 w-48 h-[1px] bg-white/10 overflow-hidden">
+        <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 w-48 h-[1px] bg-white/15 overflow-hidden">
           <motion.div
             initial={{ width: "0%" }}
             animate={{ width: "100%" }}
