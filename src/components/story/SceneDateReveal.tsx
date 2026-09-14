@@ -122,48 +122,53 @@ export function SceneDateReveal({ monthName, day, year, weekday, identity }: Sce
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
-        className="relative z-10 flex flex-col items-start justify-center w-full px-6 sm:px-14 lg:px-20 max-w-screen-xl mx-auto py-16 sm:py-12"
+        className="relative z-10 flex flex-col items-center justify-center text-center w-full px-4 sm:px-8 max-w-4xl mx-auto my-auto"
       >
+        {/* Top Act Badge */}
+        <div className="archival-badge mb-4 sm:mb-6">
+          <span>Act I · The Threshold</span>
+        </div>
+
         {/* Weekday */}
         <motion.div
-          initial={{ opacity: 0, x: -16 }}
-          animate={{ opacity: 1, x: 0 }}
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.6 }}
-          className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.3em] text-accent/60 mb-3 sm:mb-4"
+          className="font-mono text-[11px] sm:text-xs uppercase tracking-[0.35em] text-accent/90 mb-2 sm:mb-4"
         >
           {weekday}
         </motion.div>
 
         {/* Stacked date */}
-        <div className="overflow-hidden w-full">
+        <div className="overflow-hidden w-full text-center">
           <motion.div
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             transition={{ delay: 0.15, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="font-display font-black text-white leading-[0.9] tracking-tight truncate"
-            style={{ fontSize: "clamp(2.4rem, 11vw, 8.5rem)" }}
+            className="font-display font-black text-white leading-[0.9] tracking-tight uppercase"
+            style={{ fontSize: "clamp(2.4rem, 10vw, 7.5rem)" }}
           >
             {monthName}
           </motion.div>
         </div>
-        <div className="overflow-hidden w-full">
+        <div className="overflow-hidden w-full text-center">
           <motion.div
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             transition={{ delay: 0.22, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="font-display font-black leading-[0.9] tracking-tight"
-            style={{ fontSize: "clamp(3.5rem, 16vw, 13rem)", color: "#e5a93c" }}
+            style={{ fontSize: "clamp(3.8rem, 17vw, 12rem)", color: "#e5a93c" }}
           >
             {day}
           </motion.div>
         </div>
-        <div className="overflow-hidden w-full">
+        <div className="overflow-hidden w-full text-center">
           <motion.div
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             transition={{ delay: 0.3, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="font-display font-black text-white/50 leading-[0.9] tracking-tight"
-            style={{ fontSize: "clamp(2rem, 9vw, 7.5rem)" }}
+            style={{ fontSize: "clamp(2.2rem, 9vw, 6.8rem)" }}
           >
             {year}
           </motion.div>
@@ -174,8 +179,8 @@ export function SceneDateReveal({ monthName, day, year, weekday, identity }: Sce
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7, duration: 0.6 }}
-            className="mt-6 sm:mt-8 flex flex-wrap gap-2 sm:gap-3"
+            transition={{ delay: 0.5, duration: 0.6 }}
+            className="mt-6 sm:mt-8 flex flex-wrap justify-center gap-2 sm:gap-3"
           >
             {stats.map((s, idx) => (
               <PillTag

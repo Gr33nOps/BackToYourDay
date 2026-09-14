@@ -146,17 +146,27 @@ export function LandingScene({ initialDate, onSubmit }: LandingSceneProps) {
 
       {/* Main content */}
       <div className="relative z-10 flex flex-col items-center text-center px-2 sm:px-6 w-full max-w-md my-auto py-6">
+        {/* Archival Badge */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, duration: 0.6 }}
+          className="archival-badge mb-3"
+        >
+          <span>Archive Gateway · Temporal Chronometer</span>
+        </motion.div>
+
         {/* Giant headline — responsive scale */}
         <motion.h1
           initial={{ opacity: 0, y: 24, filter: "blur(8px)" }}
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-          className="font-display font-black leading-[0.88] tracking-tight text-white mb-2 select-none"
-          style={{ fontSize: "clamp(2.8rem, 13vw, 8rem)" }}
+          className="font-display font-black leading-[0.9] tracking-tight text-white mb-2 select-none"
+          style={{ fontSize: "clamp(2.5rem, 10vw, 6.5rem)" }}
         >
-          Your
+          Journey Back
           <br />
-          <span className="text-accent">Day.</span>
+          <span className="text-gold-gradient">To Your Day.</span>
         </motion.h1>
 
         {/* Date range */}
@@ -166,7 +176,7 @@ export function LandingScene({ initialDate, onSubmit }: LandingSceneProps) {
           transition={{ delay: 0.4, duration: 0.6 }}
           className="font-mono text-[11px] uppercase tracking-[0.25em] text-white/50 mb-6 sm:mb-8"
         >
-          1920 — present
+          1920 — present · An Odyssey Across Time
         </motion.p>
 
         {/* Date picker card */}
@@ -186,7 +196,7 @@ export function LandingScene({ initialDate, onSubmit }: LandingSceneProps) {
             {/* Selected date display */}
             <div className="text-center">
               <div className="font-mono text-[10px] uppercase tracking-widest text-white/45 mb-1">
-                selected date
+                selected temporal anchor
               </div>
               <motion.div
                 key={formattedDate}
@@ -201,12 +211,12 @@ export function LandingScene({ initialDate, onSubmit }: LandingSceneProps) {
 
             <SimpleDatePicker value={date} onChange={setDate} />
 
-            {/* CTA (21st MCP modern shimmer button) */}
+            {/* CTA */}
             <ShimmerButton
               onClick={handleSubmit}
-              className="w-full text-center justify-center py-3.5 sm:py-4"
+              className="w-full text-center justify-center py-3.5 sm:py-4 cursor-pointer"
             >
-              Reveal This Day →
+              Begin The Journey →
             </ShimmerButton>
           </div>
         </motion.div>
@@ -215,7 +225,7 @@ export function LandingScene({ initialDate, onSubmit }: LandingSceneProps) {
       {/* Bottom hint */}
       <footer className="relative z-20 flex items-center justify-center w-full shrink-0 py-2">
         <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-white/40 text-center">
-          Astronomy · Weather · Culture
+          Chronicle · Astronomy · Culture · Cinema
         </span>
       </footer>
     </div>

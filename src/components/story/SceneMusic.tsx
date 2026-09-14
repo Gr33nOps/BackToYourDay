@@ -2,48 +2,12 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { SongItem } from "@/lib/culture";
 import { prefersReducedMotion } from "@/utils/motion";
-import { PillTag } from "@/components/ui/PillTag";
 import { sound } from "@/lib/sound";
-import { Radio } from "lucide-react";
+import { Disc3 } from "lucide-react";
 
 interface SceneMusicProps {
   songs: SongItem[];
   year: number;
-}
-
-function MiniEqualizer({ active }: { active: boolean }) {
-  return (
-    <div className="flex items-end gap-1 h-5 shrink-0 px-1" aria-hidden="true">
-      <span
-        className={`w-1 rounded-full transition-all duration-300 ${
-          active
-            ? "bg-amber-400 animate-[pulse_0.7s_ease-in-out_infinite] h-4"
-            : "bg-white/20 h-1.5"
-        }`}
-      />
-      <span
-        className={`w-1 rounded-full transition-all duration-300 ${
-          active
-            ? "bg-amber-400 animate-[pulse_0.5s_ease-in-out_infinite_0.2s] h-5"
-            : "bg-white/20 h-3"
-        }`}
-      />
-      <span
-        className={`w-1 rounded-full transition-all duration-300 ${
-          active
-            ? "bg-amber-400 animate-[pulse_0.8s_ease-in-out_infinite_0.4s] h-3"
-            : "bg-white/20 h-2"
-        }`}
-      />
-      <span
-        className={`w-1 rounded-full transition-all duration-300 ${
-          active
-            ? "bg-amber-400 animate-[pulse_0.6s_ease-in-out_infinite_0.1s] h-4"
-            : "bg-white/20 h-2.5"
-        }`}
-      />
-    </div>
-  );
 }
 
 export function SceneMusic({ songs, year }: SceneMusicProps) {
@@ -74,7 +38,7 @@ export function SceneMusic({ songs, year }: SceneMusicProps) {
     };
     window.addEventListener("resize", resize);
 
-    const numBars = Math.floor(w / 7);
+    const numBars = Math.floor(w / 8);
     const bars = Array.from({ length: numBars }, (_, i) => ({
       phase: (i / numBars) * Math.PI * 8 + Math.random() * Math.PI * 2,
       speed: 0.04 + Math.random() * 0.06,
@@ -83,13 +47,12 @@ export function SceneMusic({ songs, year }: SceneMusicProps) {
 
     if (prefersReducedMotion()) {
       const barW = w / numBars;
-      const centerY = h * 0.65;
-      const maxH = h * 0.35;
+      const centerY = h * 0.75;
+      const maxH = h * 0.25;
       for (let i = 0; i < numBars; i++) {
         const b = bars[i];
         const height = Math.abs(Math.sin(b.phase) * b.amp) * maxH + 2;
-        const hue = 32 + (i / numBars) * 25;
-        ctx.fillStyle = `hsla(${hue},80%,65%,0.15)`;
+        ctx.fillStyle = `rgba(229,169,60,0.12)`;
         ctx.fillRect(i * barW, centerY - height, barW - 1.5, height * 2);
       }
       return () => window.removeEventListener("resize", resize);
@@ -98,15 +61,14 @@ export function SceneMusic({ songs, year }: SceneMusicProps) {
     const render = () => {
       ctx.clearRect(0, 0, w, h);
       const barW = w / numBars;
-      const centerY = h * 0.65;
-      const maxH = h * 0.35;
+      const centerY = h * 0.75;
+      const maxH = h * 0.25;
       for (let i = 0; i < numBars; i++) {
         const b = bars[i];
         b.phase += b.speed;
         const height = Math.abs(Math.sin(b.phase) * b.amp) * maxH + 2;
-        const hue = 32 + (i / numBars) * 25;
-        const alpha = 0.08 + Math.abs(Math.sin(b.phase)) * 0.16;
-        ctx.fillStyle = `hsla(${hue},80%,65%,${alpha})`;
+        const alpha = 0.06 + Math.abs(Math.sin(b.phase)) * 0.14;
+        ctx.fillStyle = `rgba(229,169,60,${alpha})`;
         ctx.fillRect(i * barW, centerY - height, barW - 1.5, height * 2);
       }
       animId = requestAnimationFrame(render);
@@ -119,23 +81,22 @@ export function SceneMusic({ songs, year }: SceneMusicProps) {
   }, []);
 
   return (
-    <div className="relative w-full h-full overflow-hidden flex flex-col justify-between">
-      {/* Blurred album art background synchronized with selected track */}
+    <div className="relative w-full h-full flex flex-col items-center justify-between px-4 sm:px-8 py-6 sm:py-8 max-w-3xl mx-auto z-10 select-none text-center">
+      {/* Background blurred ambiance */}
       <AnimatePresence mode="wait">
         {currentSong.albumArt && (
           <motion.div
             key={currentSong.title}
-            initial={{ opacity: 0, scale: 1.1 }}
-            animate={{ opacity: 1, scale: 1.05 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.2 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.7 }}
-            className="absolute inset-0 z-0"
+            className="absolute inset-0 z-0 pointer-events-none"
             style={{
               backgroundImage: `url(${currentSong.albumArt})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
-              filter: "blur(40px) brightness(0.22) saturate(0.6)",
-              transform: "scale(1.2)",
+              filter: "blur(55px)",
             }}
           />
         )}
@@ -145,113 +106,101 @@ export function SceneMusic({ songs, year }: SceneMusicProps) {
       <canvas
         ref={canvasRef}
         aria-hidden="true"
-        className="absolute inset-0 pointer-events-none w-full h-full z-[1]"
+        className="absolute inset-0 pointer-events-none w-full h-full z-0"
       />
 
-      {/* Atmospheric vignette */}
-      <div
-        className="absolute inset-0 z-[2] pointer-events-none"
-        style={{
-          background:
-            "linear-gradient(to top, rgba(5,5,7,0.95) 0%, transparent 40%, rgba(5,5,7,0.6) 100%)",
-        }}
-      />
-
-      {/* Header with clearance below HUD */}
-      <header className="relative z-10 pt-14 sm:pt-12 px-5 sm:px-12 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <PillTag
-            icon={<Radio className="w-3 h-3 text-accent" />}
-            label="AIRWAVES"
-            value={`${year} BILLBOARD`}
-            dot
-            dotColor="amber"
-            variant="glass"
-          />
+      {/* Top Header Badge */}
+      <div className="shrink-0 pt-2 relative z-10">
+        <div className="archival-badge">
+          <Disc3 className="w-3 h-3 text-accent" />
+          <span>Act VII · The Anthem</span>
         </div>
-        <div className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.25em] text-white/45">
-          Top 3 Anthems
-        </div>
-      </header>
+      </div>
 
-      {/* Main 3-Song Showcase: 1 page with all 3 songs and full visible names */}
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-8 max-w-3xl mx-auto w-full my-auto py-2 sm:py-4">
-        <div className="w-full flex flex-col gap-2.5 sm:gap-3.5">
-          {displaySongs.map((song, index) => {
-            const isSelected = index === selected;
+      {/* Main Center Stage: Pure Center-Aligned Single Focus */}
+      <div className="flex-1 flex flex-col items-center justify-center my-auto w-full py-2 relative z-10">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentSong.title}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-col items-center justify-center space-y-3 sm:space-y-4 max-w-xl w-full"
+          >
+            {/* Centered Vinyl Record with spinning album center */}
+            <div className="relative w-44 h-44 sm:w-56 sm:h-56 md:w-64 md:h-64 flex items-center justify-center">
+              {/* Vinyl outer disc */}
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 16, repeat: Infinity, ease: "linear" }}
+                className="w-full h-full rounded-full bg-[#111115] border-4 border-[#222228] shadow-[0_20px_50px_rgba(0,0,0,0.9),0_0_35px_rgba(229,169,60,0.2)] flex items-center justify-center relative overflow-hidden"
+              >
+                {/* Vinyl grooves */}
+                <div className="absolute inset-2 rounded-full border border-white/5" />
+                <div className="absolute inset-5 rounded-full border border-white/5" />
+                <div className="absolute inset-8 rounded-full border border-white/5" />
+                <div className="absolute inset-11 rounded-full border border-white/5" />
+
+                {/* Album Art Center Label */}
+                <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-2 border-amber-400/50 shadow-inner relative z-10 bg-black">
+                  {currentSong.albumArt ? (
+                    <img
+                      src={currentSong.albumArt}
+                      alt={currentSong.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-accent/20 flex items-center justify-center">
+                      <Disc3 className="w-8 h-8 text-accent" />
+                    </div>
+                  )}
+                  {/* Center spindle hole */}
+                  <div className="absolute inset-0 m-auto w-4 h-4 rounded-full bg-[#060608] border border-amber-400/60 shadow" />
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Song Title */}
+            <h2 className="font-display font-black text-white text-2xl sm:text-3xl md:text-4xl leading-tight tracking-tight px-2">
+              {currentSong.title}
+            </h2>
+
+            {/* Artist */}
+            <div className="font-serif font-bold text-accent text-lg sm:text-xl">
+              {currentSong.artist}
+            </div>
+
+            {/* Billboard Rank Tag */}
+            <div className="font-mono text-xs text-white/50 uppercase tracking-widest">
+              #{selected + 1} Billboard Hot 100 · {year}
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* Bottom Selector Pills */}
+      {displaySongs.length > 1 && (
+        <div className="w-full flex items-center justify-center gap-1.5 sm:gap-2 overflow-x-auto py-2 shrink-0 mb-12 sm:mb-14 px-2 relative z-10">
+          {displaySongs.map((song, idx) => {
+            const isSelected = idx === selected;
             return (
-              <motion.button
+              <button
                 key={song.title}
                 type="button"
-                onClick={() => handleSelect(index)}
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.99 }}
-                transition={{ duration: 0.2 }}
-                aria-label={`Select #${index + 1} song: ${song.title} by ${song.artist}`}
-                className={`group relative flex items-center justify-between gap-3 sm:gap-5 rounded-2xl p-2.5 sm:p-3.5 text-left transition-all duration-300 cursor-pointer ${
+                onClick={() => handleSelect(idx)}
+                className={`px-3 py-1 rounded-full font-mono text-[9px] sm:text-[10px] uppercase tracking-wider transition-all cursor-pointer ${
                   isSelected
-                    ? "bg-white/[0.09] border-amber-400/60 shadow-[0_0_24px_rgba(229,169,60,0.18),inset_0_1px_0_rgba(255,255,255,0.22)] ring-1 ring-amber-400/40"
-                    : "bg-white/[0.03] hover:bg-white/[0.06] border-white/10 hover:border-white/20 opacity-90 hover:opacity-100"
-                } border backdrop-blur-xl`}
+                    ? "bg-accent text-black font-bold shadow-[0_0_12px_rgba(229,169,60,0.5)]"
+                    : "bg-white/[0.06] text-white/60 hover:bg-white/[0.12] hover:text-white border border-white/10"
+                }`}
               >
-                {/* Left: Album cover with rank badge */}
-                <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
-                  <div className="relative w-12 h-12 sm:w-16 sm:h-16 shrink-0 rounded-xl overflow-hidden shadow-lg bg-black/50">
-                    <img
-                      src={song.albumArt}
-                      alt={song.title}
-                      loading="eager"
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-
-                    {/* Rank badge overlay */}
-                    <div className="absolute top-1 left-1">
-                      <span
-                        className={`inline-flex items-center justify-center font-mono text-[9px] font-bold px-1.5 py-0.5 rounded-full backdrop-blur-md shadow-md ${
-                          index === 0
-                            ? "bg-amber-500 text-black border border-amber-300"
-                            : "bg-black/80 text-white/90 border border-white/20"
-                        }`}
-                      >
-                        #{index + 1}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Middle: Title & Artist — FULL PROPER VISIBLE NAME (no truncate!) */}
-                  <div className="min-w-0 flex-1">
-                    <div className="font-mono text-[9px] sm:text-[10px] uppercase tracking-widest text-accent/80 mb-0.5">
-                      {index === 0 ? "Billboard #1" : `Rank #${index + 1}`} · {year}
-                    </div>
-                    <h3
-                      className={`font-display font-bold leading-tight break-words text-xs sm:text-base md:text-lg ${
-                        isSelected ? "text-amber-200" : "text-white"
-                      }`}
-                    >
-                      {song.title}
-                    </h3>
-                    <p className="font-mono text-[10px] sm:text-xs text-white/55 uppercase tracking-wider break-words mt-0.5">
-                      {song.artist}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Right: Audio Equalizer animation */}
-                <div className="flex items-center gap-2 shrink-0">
-                  <MiniEqualizer active={isSelected} />
-                </div>
-              </motion.button>
+                #{idx + 1} {song.title.slice(0, 16)}
+              </button>
             );
           })}
         </div>
-      </main>
-
-      {/* Bottom hint with safe clearance above mobile nav */}
-      <footer className="relative z-10 pb-16 sm:pb-12 text-center">
-        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/35">
-          Tap any track to preview mood
-        </span>
-      </footer>
+      )}
     </div>
   );
 }

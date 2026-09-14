@@ -1,97 +1,106 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ExternalLink } from "lucide-react";
+import { Telescope, ExternalLink } from "lucide-react";
 import type { NasaApodData } from "@/lib/culture";
+import { TiltPlate } from "@/components/ui/TiltPlate";
 
 interface SceneApodProps {
   sky: NasaApodData;
   formattedDate: string;
 }
 
-export function SceneApod({ sky, formattedDate }: SceneApodProps) {
+export function SceneApod({ sky }: SceneApodProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
 
-  const fallbackImg = "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=1600&q=80";
+  const fallbackImg =
+    "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=1600&q=80";
   const displayImage = hasError ? fallbackImg : sky.imageUrl;
 
   return (
-    <div className="relative w-full h-full overflow-hidden">
-      {/* Full-bleed image with Ken Burns zoom */}
-      {!imageLoaded && (
-        <div className="absolute inset-0 bg-[#050507] flex items-center justify-center z-10">
-          <div className="font-mono text-[11px] uppercase tracking-widest text-white/40">
-            Loading…
+    <div className="relative w-full h-full flex flex-col items-center justify-between px-4 sm:px-8 py-6 sm:py-8 max-w-3xl mx-auto z-10 select-none text-center">
+      {/* Background blurred ambiance */}
+      <div
+        className="absolute inset-0 z-0 opacity-20 pointer-events-none"
+        style={{
+          backgroundImage: `url(${displayImage})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          filter: "blur(60px)",
+        }}
+      />
+
+      {/* Top Header Badge */}
+      <div className="shrink-0 pt-2 relative z-10">
+        <div className="archival-badge">
+          <Telescope className="w-3 h-3 text-accent" />
+          <span>Act IV · The Cosmos</span>
+        </div>
+      </div>
+
+      {/* Main Center Stage: Pure Center-Aligned Single Focus */}
+      <div className="flex-1 flex flex-col items-center justify-center my-auto w-full py-2 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="flex flex-col items-center justify-center space-y-3 sm:space-y-4 max-w-xl w-full"
+        >
+          {/* Centered Space Telescope Specimen Plate */}
+          <div className="w-64 sm:w-80 md:w-96 max-w-full">
+            <TiltPlate maxTilt={6} className="w-full">
+              <div className="relative rounded-2xl overflow-hidden border border-amber-400/30 bg-[#0d0f15] shadow-[0_20px_50px_rgba(0,0,0,0.85),0_0_30px_rgba(229,169,60,0.18)] group">
+                <div className="relative aspect-[16/10] w-full overflow-hidden bg-black/80">
+                  <img
+                    src={displayImage}
+                    alt={sky.title}
+                    loading="eager"
+                    onLoad={() => setImageLoaded(true)}
+                    onError={() => {
+                      setHasError(true);
+                      setImageLoaded(true);
+                    }}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent pointer-events-none" />
+                </div>
+                <div className="px-3 py-1.5 bg-[#0a0c12]/90 flex items-center justify-between border-t border-white/10">
+                  <span className="font-mono text-[9px] uppercase tracking-widest text-accent">
+                    {sky.constellationFocus || "Deep Space"}
+                  </span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+                </div>
+              </div>
+            </TiltPlate>
           </div>
-        </div>
-      )}
 
-      <motion.img
-        src={displayImage}
-        alt={sky.title}
-        loading="eager"
-        onLoad={() => setImageLoaded(true)}
-        onError={() => { setHasError(true); setImageLoaded(true); }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: imageLoaded ? 1 : 0 }}
-        transition={{ duration: 1 }}
-        className="absolute inset-0 w-full h-full object-cover object-center animate-ken-burns"
-        style={{ transformOrigin: "center center" }}
-      />
+          {/* Title */}
+          <h2 className="font-display font-black text-white text-xl sm:text-3xl md:text-4xl leading-tight tracking-tight px-2">
+            {sky.title}
+          </h2>
 
-      {/* Vignette — only top + bottom */}
-      <div className="absolute inset-0 z-[2] pointer-events-none"
-        style={{ background: "linear-gradient(to bottom, rgba(5,5,7,0.55) 0%, transparent 25%, transparent 70%, rgba(5,5,7,0.8) 100%)" }}
-      />
+          {/* Attribution / Copyright */}
+          <div className="font-mono text-[10px] sm:text-[11px] text-white/50 uppercase tracking-widest">
+            {sky.copyright ? `Captured by ${sky.copyright}` : "NASA / ESA Space Telescopes"}
+          </div>
 
-      {/* Top label with clearance below HUD */}
-      <motion.div
-        initial={{ opacity: 0, y: -16 }}
-        animate={{ opacity: imageLoaded ? 1 : 0, y: imageLoaded ? 0 : -16 }}
-        transition={{ delay: 0.4, duration: 0.6 }}
-        className="absolute top-14 sm:top-12 left-6 sm:left-14 z-10 flex items-center gap-2"
-      >
-        <span className="w-1.5 h-1.5 rounded-full bg-accent" />
-        <span className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.25em] text-white/60">NASA · {formattedDate}</span>
-      </motion.div>
+          {/* Full Res Link */}
+          {(sky.hdUrl || sky.imageUrl) && imageLoaded && (
+            <a
+              href={sky.hdUrl || sky.imageUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-accent/80 hover:text-accent transition-colors pt-1"
+            >
+              <span>View Full Resolution</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          )}
+        </motion.div>
+      </div>
 
-      {/* View full res link — top right with clearance below HUD */}
-      {(sky.hdUrl || sky.imageUrl) && imageLoaded && (
-        <motion.a
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          href={sky.hdUrl || sky.imageUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="absolute top-14 sm:top-12 right-6 sm:right-14 z-10 flex items-center gap-1.5 cursor-pointer text-white/50 hover:text-white/80 transition-colors px-2 py-0.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-sm"
-          style={{ textDecoration: "none" }}
-        >
-          <ExternalLink className="w-3.5 h-3.5" />
-          <span className="font-mono text-[10px] uppercase tracking-widest">Full Res</span>
-        </motion.a>
-      )}
-
-      {/* Bottom: title + credit with clearance above mobile nav */}
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: imageLoaded ? 1 : 0, y: imageLoaded ? 0 : 24 }}
-        transition={{ delay: 0.5, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="absolute bottom-16 sm:bottom-12 left-6 sm:left-14 right-6 sm:right-14 z-10"
-      >
-        <div className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.3em] text-white/50 mb-1 sm:mb-2">
-          {sky.constellationFocus || "Deep Space"}
-        </div>
-        <h2
-          className="font-display font-black text-white leading-tight"
-          style={{ fontSize: "clamp(1.3rem, 4.5vw, 3.8rem)" }}
-        >
-          {sky.title}
-        </h2>
-        <div className="font-mono text-[10px] sm:text-[11px] text-white/45 mt-1 sm:mt-2">
-          {sky.copyright || "NASA / ESA Space Telescopes"}
-        </div>
-      </motion.div>
+      {/* Bottom spacer for clearance above HUD */}
+      <div className="shrink-0 mb-12 sm:mb-14" />
     </div>
   );
 }

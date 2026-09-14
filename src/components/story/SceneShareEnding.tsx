@@ -95,10 +95,17 @@ export function SceneShareEnding({
   ];
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center overflow-y-auto px-4 py-16 sm:py-12">
+    <div className="relative w-full h-full flex flex-col items-center justify-between px-4 sm:px-8 py-6 sm:py-8 max-w-3xl mx-auto z-10 select-none text-center overflow-y-auto">
       <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 pointer-events-none w-full h-full z-0" />
 
-      <div className="relative z-10 w-full max-w-xl text-center my-auto">
+      <div className="relative z-10 w-full max-w-xl text-center my-auto pt-2">
+        {/* Archival Badge */}
+        <div className="flex justify-center mb-4">
+          <div className="archival-badge">
+            <span>Epilogue · Your Time Capsule</span>
+          </div>
+        </div>
+
         {/* Date */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -170,12 +177,12 @@ export function SceneShareEnding({
           </GlassButton>
         </motion.div>
 
-        {/* Reset — safe clearance above mobile nav */}
+        {/* Reset */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.75 }}
-          className="mt-6 mb-4 sm:mb-0 flex justify-center"
+          className="mt-6 flex justify-center"
         >
           <GhostPillButton
             onClick={onReset}
@@ -185,6 +192,9 @@ export function SceneShareEnding({
           </GhostPillButton>
         </motion.div>
       </div>
+
+      {/* Bottom spacer for clearance above HUD */}
+      <div className="shrink-0 mb-12 sm:mb-14" />
     </div>
   );
 }

@@ -160,7 +160,7 @@ export default function App() {
         )}
 
         {/* VIEW 4: STORY SLIDESHOW EXPERIENCE */}
-        {view === "story" && identity && moon && weather && sky && (
+        {view === "story" && identity && moon && weather && sky && history && (
           <motion.div
             key="story-scene"
             initial={{ opacity: 0 }}
